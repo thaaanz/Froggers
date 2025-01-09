@@ -38,7 +38,7 @@ void avviaGioco(int pipe_fd[2]){
 
         gestioneTana(); // se si è arrivati alla tana bisogna cancellare tutto lo schermo e far ripartire i processi
     
-        gestioneCock(); //controlla se sono morti coccodrilli e se c'è spazio ne spawna altri, memorizza id velocità etc nella strtuura principale(?)
+        avviaCock(); //controlla se sono morti coccodrilli e se c'è spazio ne spawna altri, memorizza id velocità etc nella struttura principale(?)
     }
 
 }
@@ -53,4 +53,11 @@ void avviaRana(int pipe[2]){
         movimentoRana(pipe);
     }
     return;
+}
+
+void avviaCock(int pipe[2]){
+    //qua bisogna fare un for per vedere se ci sono spazi disponibili e poi le varie fork per i processi
+    // e idelmente chiamare la funzione "cock" che gestisce i movimenti, prima però va deciso verso e velocità del flusso
+    // da gestire in fase di inizializzazione
+
 }
