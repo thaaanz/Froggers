@@ -103,17 +103,31 @@ Oggetto inizializzaRana()
     return rana;
 }
 
-/*void stampaOggetto(Oggetto daStampare, int i, int j)
+void stampaOggetto(Oggetto daStampare)
 {
-    for(int c=0; c<i; c++)
-    {
-        for(int k=0; k<j; k++)
-        {
-            mvaddch(daStampare.y, daStampare.x, (daStampare.id := 'r'? spriteRana : spriteCoccodrillo));
+    // Controllo bordi verticali
+    if (daStampare.y < 0 || daStampare.y >= LINES) return;
+
+    if (daStampare.id == 'r') {
+        // Controllo bordi orizzontali per la rana
+        if (daStampare.x + J_SPRITE_RANA > COLS) return;
+        
+        for (int i = 0; i < I_SPRITE_RANA && daStampare.y + i < LINES; i++) {
+            mvprintw(daStampare.y + i, daStampare.x, "%s", spriteRana[i]);
         }
     }
-}*/
-//come cazzo si stampa una sprite?????? aaaaaaaaaaaa
+    else if (daStampare.id == 'c') {
+        // Controllo bordi orizzontali per il coccodrillo
+        if (daStampare.x + J_SPRITE_COCCO > COLS) return;
+        
+        for (int i = 0; i < I_SPRITE_COCCO && daStampare.y + i < LINES; i++) {
+            mvprintw(daStampare.y + i, daStampare.x, "%s", spriteCoccodrillo[i]);
+        }
+    }
+    else {
+        mvaddch(daStampare.y, daStampare.x, '*');
+    }
+}
 
 void gestioneRana(int pipe_fd[])
 {
