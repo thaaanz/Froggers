@@ -4,7 +4,7 @@ int avviaRana(int pipe_fd[2]){
     pid_t pid;
 
     if( (pid=fork() == -1)){
-        perror("fork rana fallita");
+        perror("fork rana fallita"); //ciao
         exit(1); //o _exit?
     }
 
