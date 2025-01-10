@@ -25,8 +25,8 @@ char spriteRana[I_SPRITE_RANA][J_SPRITE_RANA]={
 };
 
 char spriteCoccodrillo[I_SPRITE_COCCO][J_SPRITE_COCCO]={
-    "----<"
-    "WWWW "
+    "---------<"
+    "-W-W-W-W- "
 };
 
 typedef struct{
