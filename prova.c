@@ -10,15 +10,33 @@
 
 #define MAX_VITE 3
 #define FLUSSI 8
+#define I_SPRITE_RANA 2
+#define J_SPRITE_RANA 5
+#define I_SPRITE_COCCO 2
+#define J_SPRITE_COCCO 10
+#define ALTEZZA_TANE 5
+#define MAX_INTERVALLO_PROIETTILI 5
+#define VEL_GRANATA 1000 //provvisorio
+
+
+char spriteRana[I_SPRITE_RANA][J_SPRITE_RANA]={
+    " 0-0 "
+    "(___)"
+};
+
+char spriteCoccodrillo[I_SPRITE_COCCO][J_SPRITE_COCCO]={
+    "----<"
+    "WWWW "
+};
 
 typedef struct{
     char id;
-    int vary, varx;
-}Spostamento;
+    int y, x;
+}Oggetto;
 
-void avviaPipe(int* fds)
+void avviaPipe(int pipe_fd[])
 {
-    if(pipe(fds)==-1)
+    if(pipe(pipe_fd)==-1)
     {
         perror("pipe fallita");
         exit(1);
@@ -34,18 +52,19 @@ void avviancurses()
     keypad(stdscr, TRUE); 
 }
 
-void avviaGioco(int pipe_fd[2]) //contollo
+//controllo
+void avviaGioco(int pipe_fd[]) //contollo
 {
     close(pipe_fd[1]);
     avviaRana(pipe_fd);
 
     int vite=MAX_VITE;
     _Bool flagCollisione=FALSE;
-    Spostamento temp;
+    Oggetto temp;
 
     //loop principale
     while(vite > 0){ //da capire dove salvare queste vite, idealmente in una strttura
-        read(pipe_fd[0], &temp, sizeof(Spostamento)); // anche qua bisogna vedere in che strttura salvare le cose lette dalla pipe
+        read(pipe_fd[0], &temp, sizeof(Oggetto)); // anche qua bisogna vedere in che strttura salvare le cose lette dalla pipe
         avviaCock(); //controlla se sono morti coccodrilli e se c'è spazio ne spawna altri, memorizza id velocità etc nella struttura principale(?)
 
         detectCollsione(flagCollisione); //= true se trova collisioni
@@ -64,7 +83,8 @@ void avviaGioco(int pipe_fd[2]) //contollo
 
 }
 
-void avviaRana() //pasiamo la pipe
+//rana
+void avviaRana(int pipe_fd[]) //passiamo la pipe
 {
     pid_t pid;
     if((pid=fork())<0)
@@ -73,10 +93,59 @@ void avviaRana() //pasiamo la pipe
     }
     else if(pid==0) //figlio
     {
-        gestioneRana();
+        gestioneRana(pipe_fd);
     }
 }
 
+Oggetto inizializzaRana()
+{
+    Oggetto rana={'r', LINES-2, COLS/2};
+    return rana;
+}
+
+/*void stampaOggetto(Oggetto daStampare, int i, int j)
+{
+    for(int c=0; c<i; c++)
+    {
+        for(int k=0; k<j; k++)
+        {
+            mvaddch(daStampare.y, daStampare.x, (daStampare.id := 'r'? spriteRana : spriteCoccodrillo));
+        }
+    }
+}*/
+//come cazzo si stampa una sprite?????? aaaaaaaaaaaa
+
+void gestioneRana(int pipe_fd[])
+{
+    close(pipe_fd[0]);
+    Oggetto rana=inizializzaRana();
+    int c;
+
+    while(1)
+    {
+        c=(int)getch();
+        switch(c)
+        {
+            case KEY_UP:
+                if(rana.y>0) rana.y--; 
+                break;
+            case KEY_DOWN: //non è lines-2 perchè c'è roba sotto, da modificare
+                if((rana.y+I_SPRITE_RANA-1)<=LINES-2) rana.y++;
+                break;
+            case KEY_LEFT:
+                if(rana.x>0) rana.x--;
+                break;
+            case KEY_RIGHT:
+                if((rana.x+J_SPRITE_RANA-1)<=COLS-2) rana.x++;
+                break;
+            case 32:
+                sparaProiettile(pipe_fd, 0, VEL_GRANATA, rana);
+                break;
+        }
+    }
+}
+
+//coccodrilli
 void avviaCock()
 {
     for(int i=0; i<FLUSSI; i++)
@@ -90,10 +159,87 @@ void avviaCock()
             }
             else if(pid==0) //figlio
             {
-                gestioneCock();
+                //gestioneCock();
             }
         }
     }  
+}
+
+void gestioneCock(int dir, int vel, int * pipe, int flusso) // 
+{ //cacca
+    close(pipe[0]);
+    //dir=1 va a destra
+    Oggetto cock; 
+    cock.id='c';
+    if(dir==1){
+        cock.x=0; //spawn tutto a sinistra
+    }
+    else{
+        cock.x=COLS; //spawn tutto a destra
+    }
+
+    cock.y= flusso*I_SPRITE_RANA+ ALTEZZA_TANE; //offset dato dal marciapiede
+
+    int delay=vel; //dipende dalla velocità è da decidere in base a cosa, qualche costante?
+    int random;
+    while(1)
+    {
+        random=rand();
+        cock.x+=dir;
+        write(pipe[1], &cock, sizeof(Oggetto));
+        usleep(delay);
+    
+        if((random % MAX_INTERVALLO_PROIETTILI)==0){ // costante da creare
+            sparaProiettile(pipe, dir, vel, cock);
+        }
+    }
+}
+
+void sparaProiettile( int* pipe, int dir, int vel, Oggetto pistolero){ //bisogna capire dove mettere i pid per poi fare la kill nel momento in cui escono dallo schermo
+    if(pistolero.id == "c")
+        {
+            pid_t pid=fork();
+            if(pid < 0)
+            {
+                perror("fork proiettile fallita");
+            }
+            if (pid==0)
+                {
+                    movimentoProiettile( pipe, dir, vel, pistolero.x, pistolero.y); //ne crea solo uno con quella determinata direzione
+                    kill(pid);
+                }
+        }
+        // gli passo la velocità del flusso per gestire la velocità del proiettile?
+        // o ogni proiettile ha sempre la stessa?
+    if (pistolero.id == "r")
+        {
+            pid_t pid=fork();
+            if(pid < 0)
+            {
+                perror("fork proiettile fallita");
+            }
+            if (pid==0)
+                {
+                movimentoProiettile( pipe, dir, vel, pistolero.x, pistolero.y);
+                kill(pid);
+                }
+            else
+            {
+                pid=fork();
+                if(pid < 0)
+                {
+                    perror("fork proiettile fallita");
+                }
+                if (pid==0)
+                {
+                    int opp=-dir;
+                    movimentoProiettile( pipe, opp, vel, pistolero.x, pistolero.y);
+                    kill(pid);
+                    //else è il padre e continua nel while di gestioneCock
+                }
+            }
+        }
+
 }
 
 int main()
@@ -101,36 +247,6 @@ int main()
     int pipe_fd[2];
     avviaPipe(pipe_fd);
     avviancurses();
-
-    pid_t pid;
-
-    pid=fork();
-    if(pid<0)
-    {
-        perror("fork fallita");
-    }
-    else if(pid==0) //primo figlio
-    {
-
-    }
-    else //padre
-    {
-        pid=fork();
-        if(pid<0)
-        {
-            perror("fork fallita");
-        }
-        else if(pid==0) //secondo figlio
-        {
-
-        }
-        else //padre
-        {
-
-        }
-    }
-
-
     avviaGioco(pipe_fd);
     return 0;
 }
@@ -142,4 +258,6 @@ int main()
 - funzioni per la gestione di rana e coccodrillo
 - tutti i pid nella struttura principale
 - funzione che controlla se c'è spazio per i coccodrilli
+
+cacca
 */
