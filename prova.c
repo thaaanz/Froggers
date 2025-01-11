@@ -156,6 +156,7 @@ void gestioneRana(int pipe_fd[])
                 sparaProiettile(pipe_fd, 0, VEL_GRANATA, rana);
                 break;
         }
+        write(pipe_fd[1], &rana, sizeof(Oggetto));
     }
 }
 
