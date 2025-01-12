@@ -11,5 +11,11 @@
 #include <signal.h>
 #include <stdbool.h>
 
+typedef struct{
+    char id;
+    int y, x;
+}Oggetto;
+
+
 void rana(int pipe_fd[]);
 void stampaRana(Oggetto pos, WINDOW* wgioco);

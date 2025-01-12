@@ -25,11 +25,6 @@
 #define MAX_PROIETTILI 2
 
 
-typedef struct{
-    char id;
-    int y, x;
-}Oggetto;
-
 typedef struct {
     pid_t pid;
     bool attivo;

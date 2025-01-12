@@ -1,18 +1,20 @@
 #include <curses.h>
+#include "ok.h"
 #define ALTEZZA_RANA 2
 #define LARGHEZZA_RANA 5
 #define ALTEZZA_FLUSSO 4
 #define DELAY 20000
 
-const char spriteRana[ALTEZZA_RANA][LARGHEZZA_RANA]={
-    " 0-0 ",
-    "(___)"
-};
-
 typedef struct{
     char id;
     int y, x;
 }Oggetto;
+
+
+const char spriteRana[ALTEZZA_RANA][LARGHEZZA_RANA]={
+    " 0-0 ",
+    "(___)"
+};
 
 const Oggetto quit={'q', 0, 0};
 

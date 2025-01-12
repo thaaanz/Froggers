@@ -64,7 +64,10 @@ void controllo(int pipe_fd[])
 
         wrefresh(wgioco);
         
-        read(pipe_fd[0], &temp, sizeof(Oggetto));
+        if(read(pipe_fd[0], &temp, sizeof(Oggetto)) == -1){
+            perror("lettura fallita");
+            exit(89);
+        }
         switch(temp.id)
         {
             case 'r':

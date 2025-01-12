@@ -7,6 +7,7 @@
 #include <sys/wait.h> 
 #include <signal.h>
 #include <stdbool.h>
+#include "rana.h"
 
 #define MAX_VITE 3
 #define NUMERO_FLUSSI 8
@@ -16,7 +17,6 @@
 #define LARGHEZZA_COCCO 10
 #define ALTEZZA_TANE 5
 #define MAX_INTERVALLO_PROIETTILI 5
-
 #define MAX_SPEED 5
 #define DIR_RIGHT 1
 #define DIR_LEFT -1
@@ -25,10 +25,6 @@
 #define MAX_PROIETTILI 2
 
 
-typedef struct{
-    char id;
-    int y, x;
-}Oggetto;
 
 typedef struct {
     pid_t pid;
