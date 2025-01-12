@@ -70,7 +70,7 @@ void coccodrillo(Flusso flusso, int pipe_fd[])
     close(pipe_fd[0]);
     Oggetto coccodrillo={'c', flusso.y+1, flusso.direzione==DIR_RIGHT ? 1 : NCOLS};
 
-    while(coccodrillo.x > 1- LARGHEZZA_COCCO && coccodrillo.x < NCOLS + LARGHEZZA_COCCO)
+    while(coccodrillo.x > 1- LARGHEZZA_COCCO && coccodrillo.x < NCOLS + LARGHEZZA_COCCO) // in modo che scompaia gradualmente
     {
         write(pipe_fd[1], &coccodrillo, sizeof(Oggetto));
 
