@@ -6,26 +6,31 @@
 #include <sys/types.h>
 #include <sys/wait.h> 
 #include <signal.h>
-#include <time.h>
+#include <stdbool.h>
 
 #define MAX_VITE 3
-#define FLUSSI 8
-#define I_SPRITE_RANA 2
-#define J_SPRITE_RANA 5
-#define I_SPRITE_COCCO 2
-#define J_SPRITE_COCCO 10
+#define NUMERO_FLUSSI 8
+#define ALTEZZA_RANA 2
+#define LARGHEZZA_RANA 5
+#define ALTEZZA_COCCO 2
+#define LARGHEZZA_COCCO 10
 #define ALTEZZA_TANE 5
 #define MAX_INTERVALLO_PROIETTILI 5
-#define VEL_GRANATA 1000 //provvisorio
+#define DELAY 20000
+#define ALTEZZA_FLUSSO 4
+#define MAX_SPEED 5
+#define DIR_RIGHT 1
+#define DIR_LEFT -1
+#define NLINES 30
+#define NCOLS 20
 
-
-char spriteRana[I_SPRITE_RANA][J_SPRITE_RANA]={
-    " 0-0 "
+const char spriteRana[ALTEZZA_RANA][LARGHEZZA_RANA]={
+    " 0-0 ",
     "(___)"
 };
 
-char spriteCoccodrillo[I_SPRITE_COCCO][J_SPRITE_COCCO]={
-    "---------<"
+const char spriteCoccodrillo[ALTEZZA_COCCO][LARGHEZZA_COCCO]={
+    "---------<",
     "-W-W-W-W- "
 };
 
@@ -33,6 +38,41 @@ typedef struct{
     char id;
     int y, x;
 }Oggetto;
+
+typedef struct {
+    int speed;
+    int direzione;
+    int y;
+}Flusso;
+
+WINDOW* wgioco;
+
+const Oggetto quit={'q', 0, 0};
+
+void avviaPipe(int pipe_fd[]);
+void avviancurses();
+void avviaRana(int* pipe_fd);
+void rana(int pipe_fd[]);
+void stampaRana(Oggetto pos, WINDOW* wgioco);
+void controllo(int pipe_fd[]);
+void sparaGranate(Oggetto obj, int pipe_fd[]);
+void proiettile(Oggetto obj, int dir, int pipe_fd[]);
+Flusso* avviaFlussi();
+//void generaCoccodrilli(int pipe_fd[]);
+void cleanupGame(Flusso* fiume);
+
+int main()
+{
+    int pipe_fd[2];
+    avviaPipe(pipe_fd);
+    avviancurses();
+
+    avviaRana(pipe_fd);
+
+    controllo(pipe_fd);
+
+    endwin();
+}
 
 void avviaPipe(int pipe_fd[])
 {
@@ -50,229 +90,193 @@ void avviancurses()
     cbreak();
     curs_set(0);
     keypad(stdscr, TRUE); 
+    //srand(time(NULL));
 }
 
-//controllo
-void avviaGioco(int pipe_fd[]) //contollo
-{
-    close(pipe_fd[1]);
-    avviaRana(pipe_fd);
-
-    int vite=MAX_VITE;
-    _Bool flagCollisione=FALSE;
-    Oggetto temp;
-
-    //loop principale
-    while(vite > 0){ //da capire dove salvare queste vite, idealmente in una strttura
-        read(pipe_fd[0], &temp, sizeof(Oggetto)); // anche qua bisogna vedere in che strttura salvare le cose lette dalla pipe
-        avviaCock(); //controlla se sono morti coccodrilli e se c'è spazio ne spawna altri, memorizza id velocità etc nella struttura principale(?)
-
-        detectCollsione(flagCollisione); //= true se trova collisioni
-
-        if(flagCollisione){
-            gestisciCollisione(); // da passare la matrice in modo che gestisca
-        }
-
-        aggiornaSchermo(); //stampa tutto
-
-        stampaInfoGame(); //stampa di vite tempo etc, da aggiornare a ogni ciclo oppure solo quando cambia?(una volta al secondo)
-
-        gestioneTana(); // se si è arrivati alla tana bisogna cancellare tutto lo schermo e far ripartire i processi
-    
-    }
-
-}
-
-//rana
-void avviaRana(int pipe_fd[]) //passiamo la pipe
-{
+void avviaRana(int* pipe_fd) {
     pid_t pid;
-    if((pid=fork())<0)
+    pid = fork();
+    if (pid == -1) 
     {
-        perror("fork rana fallita");
+        endwin();
+        perror("Fork rana fallita");
+        exit(1);
     }
-    else if(pid==0) //figlio
-    {
-        gestioneRana(pipe_fd);
-    }
-}
-
-Oggetto inizializzaRana()
-{
-    Oggetto rana={'r', LINES-2, COLS/2};
-    return rana;
-}
-
-void stampaOggetto(Oggetto daStampare)
-{
-    // Controllo bordi verticali
-    if (daStampare.y < 0 || daStampare.y >= LINES) return;
-
-    if (daStampare.id == 'r') {
-        // Controllo bordi orizzontali per la rana
-        if (daStampare.x + J_SPRITE_RANA > COLS) return;
-        
-        for (int i = 0; i < I_SPRITE_RANA && daStampare.y + i < LINES; i++) {
-            mvprintw(daStampare.y + i, daStampare.x, "%s", spriteRana[i]);
-        }
-    }
-    else if (daStampare.id == 'c') {
-        // Controllo bordi orizzontali per il coccodrillo
-        if (daStampare.x + J_SPRITE_COCCO > COLS) return;
-        
-        for (int i = 0; i < I_SPRITE_COCCO && daStampare.y + i < LINES; i++) {
-            mvprintw(daStampare.y + i, daStampare.x, "%s", spriteCoccodrillo[i]);
-        }
-    }
-    else {
-        mvaddch(daStampare.y, daStampare.x, '*');
+    if (pid == 0) {
+        rana(pipe_fd);
+        exit(0);
     }
 }
 
-void gestioneRana(int pipe_fd[])
+void rana(int pipe_fd[])
 {
     close(pipe_fd[0]);
-    Oggetto rana=inizializzaRana();
+    Oggetto rana;
     int c;
 
     while(1)
     {
+        rana.id='r'; rana.y=0; rana.x=0; 
+
         c=(int)getch();
         switch(c)
         {
             case KEY_UP:
-                if(rana.y>0) rana.y--; 
+                rana.y= -ALTEZZA_FLUSSO;
                 break;
-            case KEY_DOWN: //non è lines-2 perchè c'è roba sotto, da modificare
-                if((rana.y+I_SPRITE_RANA-1)<=LINES-2) rana.y++;
+            case KEY_DOWN: 
+                rana.y= +ALTEZZA_FLUSSO;
                 break;
             case KEY_LEFT:
-                if(rana.x>0) rana.x--;
+                rana.x= -1;
                 break;
             case KEY_RIGHT:
-                if((rana.x+J_SPRITE_RANA-1)<=COLS-2) rana.x++;
+                rana.x= +1;
                 break;
+            case 'q':
+                write(pipe_fd[1], &quit, sizeof(Oggetto));
+                return;
             case 32:
-                sparaProiettile(pipe_fd, 0, VEL_GRANATA, rana);
+                rana.id='g';
                 break;
         }
+        
         write(pipe_fd[1], &rana, sizeof(Oggetto));
+        usleep(DELAY);
     }
 }
 
-//coccodrilli
-void avviaCock()
+void controllo(int pipe_fd[]) 
 {
-    for(int i=0; i<FLUSSI; i++)
+    close(pipe_fd[1]);
+
+    wgioco=newwin(NLINES, NCOLS, 0, 0);
+
+    Oggetto rana={'r', NLINES-ALTEZZA_RANA-1, NCOLS/2};
+    Oggetto temp, proiettile;
+
+    Flusso* fiume=avviaFlussi();
+
+    while(true)
     {
-        if(spazioCock()) //passiamo il numero di riga e qualcosa per il numero di coccodrilli
+        wclear(wgioco);
+        box(wgioco, ACS_VLINE, ACS_HLINE);
+        stampaRana(rana, wgioco);
+
+        for(int i=0; i<NUMERO_FLUSSI; i++)
         {
-            pid_t pid;
-            if((pid=fork())<0)
-            {
-                perror("fork coccodrillo fallita");
-            }
-            else if(pid==0) //figlio
-            {
-                //gestioneCock();
-            }
+            mvwprintw(wgioco, fiume[i].y, 2, "direziione: %d - velocita' %d", fiume[i].direzione, fiume[i].speed);
         }
-    }  
-}
 
-void gestioneCock(int dir, int vel, int * pipe, int flusso) // 
-{ //cacca
-    close(pipe[0]);
-    //dir=1 va a destra
-    Oggetto cock; 
-    cock.id='c';
-    if(dir==1){
-        cock.x=0; //spawn tutto a sinistra
-    }
-    else{
-        cock.x=COLS; //spawn tutto a destra
-    }
-
-    cock.y= flusso*I_SPRITE_RANA+ ALTEZZA_TANE; //offset dato dal marciapiede
-
-    int delay=vel; //dipende dalla velocità è da decidere in base a cosa, qualche costante?
-    int random;
-    while(1)
-    {
-        random=rand();
-        cock.x+=dir;
-        write(pipe[1], &cock, sizeof(Oggetto));
-        usleep(delay);
-    
-        if((random % MAX_INTERVALLO_PROIETTILI)==0){ // costante da creare
-            sparaProiettile(pipe, dir, vel, cock);
+        wrefresh(wgioco);
+        
+        read(pipe_fd[0], &temp, sizeof(Oggetto));
+        switch(temp.id)
+        {
+            case 'r':
+                rana.x+=temp.x;
+                rana.y+=temp.y;
+                if(rana.x<0) rana.x=0;
+                if(rana.y<0) rana.y=0;
+                if(rana.x>NCOLS-LARGHEZZA_RANA) rana.x=NCOLS-LARGHEZZA_RANA;
+                if(rana.x>NLINES-ALTEZZA_RANA) rana.y=NLINES-ALTEZZA_RANA;
+                break;
+            case 'q':
+                cleanupGame(fiume); 
+                break;
+            case 'g': 
+                sparaGranate(rana, pipe_fd);
+                break;
+            case 'o':
+                proiettile=temp;
+                mvwaddch(wgioco, proiettile.y, proiettile.x, proiettile.id);
+                break;
         }
+
+        usleep(DELAY);
     }
 }
 
-void sparaProiettile( int* pipe, int dir, int vel, Oggetto pistolero){ //bisogna capire dove mettere i pid per poi fare la kill nel momento in cui escono dallo schermo
-    if(pistolero.id == "c")
-        {
-            pid_t pid=fork();
-            if(pid < 0)
-            {
-                perror("fork proiettile fallita");
-            }
-            if (pid==0)
-                {
-                    movimentoProiettile( pipe, dir, vel, pistolero.x, pistolero.y); //ne crea solo uno con quella determinata direzione
-                    kill(pid);
-                }
-        }
-        // gli passo la velocità del flusso per gestire la velocità del proiettile?
-        // o ogni proiettile ha sempre la stessa?
-    if (pistolero.id == "r")
-        {
-            pid_t pid=fork();
-            if(pid < 0)
-            {
-                perror("fork proiettile fallita");
-            }
-            if (pid==0)
-                {
-                movimentoProiettile( pipe, dir, vel, pistolero.x, pistolero.y);
-                kill(pid);
-                }
-            else
-            {
-                pid=fork();
-                if(pid < 0)
-                {
-                    perror("fork proiettile fallita");
-                }
-                if (pid==0)
-                {
-                    int opp=-dir;
-                    movimentoProiettile( pipe, opp, vel, pistolero.x, pistolero.y);
-                    kill(pid);
-                    //else è il padre e continua nel while di gestioneCock
-                }
-            }
-        }
-
-}
-
-int main()
+void stampaRana(Oggetto pos, WINDOW* wgioco) 
 {
-    int pipe_fd[2];
-    avviaPipe(pipe_fd);
-    avviancurses();
-    avviaGioco(pipe_fd);
-    return 0;
+    for (int i = 0; i < ALTEZZA_RANA; i++) {
+        for( int j=0; j < LARGHEZZA_RANA; j++){
+            mvwaddch(wgioco, pos.y +i, pos.x+j,  spriteRana[i][j]);
+        }
+    }
 }
 
+Flusso* avviaFlussi(void) 
+{
+    Flusso* fiume = malloc(NUMERO_FLUSSI * sizeof(Flusso));
+    if (fiume == NULL) {
+        endwin();
+        perror("Errore allocazione memoria");
+        exit(1);
+    }
 
-/*
-- funzioni per le collisioni
-- funzioni per la stampa
-- funzioni per la gestione di rana e coccodrillo
-- tutti i pid nella struttura principale
-- funzione che controlla se c'è spazio per i coccodrilli
+    srand(time(NULL));  // Inizializza il generatore di numeri casuali
+    int dir = -1 + (rand() % 3);
+    int y_pos = 2;  // Inizia da una posizione più in alto
 
-cacca
-*/
+    for(int i = 0; i < NUMERO_FLUSSI; i++) {
+        fiume[i].direzione = dir;
+        fiume[i].speed = 1 + (rand() % MAX_SPEED);  // Velocità minima 1
+        fiume[i].y = y_pos;
+        y_pos += 2;  // Spazia i flussi verticalmente
+        dir = -dir;  // Alterna la direzione
+    }
+    return fiume;
+}
+
+void liberaFlussi(Flusso* fiume) 
+{
+    if (fiume != NULL) {
+        free(fiume);
+    }
+}
+
+void cleanupGame(Flusso* fiume)
+{
+    endwin();
+    liberaFlussi(fiume);
+}
+
+void sparaGranate(Oggetto obj, int pipe_fd[])
+{
+    pid_t pid=fork();
+    if(pid<0)
+    {
+        perror("fork call");
+        _exit(12);
+    }
+    else
+    {
+        proiettile(obj, DIR_RIGHT, pipe_fd);
+    }
+
+    pid_t pidd=fork();
+    if(pid<0)
+    {
+        perror("fork call");
+        _exit(13);
+    }
+    else
+    {
+        proiettile(obj, DIR_LEFT, pipe_fd);
+    }
+}
+
+void proiettile(Oggetto obj, int dir, int pipe_fd[])
+{
+    Oggetto proiettile={'o', obj.x, obj.y};
+
+    while(proiettile.y>0 && proiettile.y<COLS-2)
+    {
+        write(pipe_fd[1], &proiettile, sizeof(Oggetto));
+        proiettile.y+=dir;
+
+        usleep(DELAY/2);
+    }
+
+}
