@@ -1,8 +1,14 @@
 a.out: main.o ok.o
-	gcc main.o ok.o -lncurses
+	gcc main.o ok.o rana.o -lncurses
+
+main.o: prova_header.c
+	gcc -c prova_header.c -o main.o
+
+rana.o: rana.c rana.h
+	gcc -c rana.c -o rana.o
 
 ok.o: ok.c ok.h
-	gcc -c ok.c
+	gcc -c ok.c 
 
-main.o: prova_h.c
-	gcc -c prova_h.c -o main.o
+clean:
+	rm -f *.o

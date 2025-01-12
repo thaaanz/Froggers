@@ -10,8 +10,7 @@
 
 #define MAX_VITE 3
 #define NUMERO_FLUSSI 8
-#define ALTEZZA_RANA 2
-#define LARGHEZZA_RANA 5
+
 #define ALTEZZA_COCCO 2
 #define LARGHEZZA_COCCO 10
 #define ALTEZZA_TANE 5
@@ -25,15 +24,6 @@
 #define NCOLS 50
 #define MAX_PROIETTILI 2
 
-const char spriteRana[ALTEZZA_RANA][LARGHEZZA_RANA]={
-    " 0-0 ",
-    "(___)"
-};
-
-const char spriteCoccodrillo[ALTEZZA_COCCO][LARGHEZZA_COCCO]={
-    "---------<",
-    "-W-W-W-W- "
-};
 
 typedef struct{
     char id;
@@ -41,15 +31,18 @@ typedef struct{
 }Oggetto;
 
 typedef struct {
+    pid_t pid;
+    bool attivo;
+} ProcessoProiettile;
+
+typedef struct {
     int speed;
     int direzione;
     int y;
 }Flusso;
 
-typedef struct {
-    pid_t pid;
-    bool attivo;
-} ProcessoProiettile;
 
 void avviaPipe(int pipe_fd[]);
 void avviancurses();
+void avviaRana(int* pipe_fd);
+Flusso* avviaFlussi();
