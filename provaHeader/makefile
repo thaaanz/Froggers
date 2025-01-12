@@ -4,5 +4,5 @@ a.out: main.o ok.o
 ok.o: ok.c ok.h
 	gcc -c ok.c
 
-main.o: prova_giulia.c
-	gcc -c prova_header.c -o main.o
+main.o: prova_h.c
+	gcc -c prova_h.c -o main.o
