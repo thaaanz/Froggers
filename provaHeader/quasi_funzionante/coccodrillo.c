@@ -23,19 +23,20 @@ void stampaCoccodrillo(Oggetto coccodrillo, WINDOW* window, int n)
         int y = coccodrillo.y + i; 
         int x = coccodrillo.x + j; 
         
-        mvwaddch(window, y, x, (char)n); 
+        mvwaddch(window, y, x, spriteCoccodrillo[i][j]); 
         
     } 
 } 
     wrefresh(window);
 }
 
-void stampaCoccodrilli(Processo * coccodrilli, WINDOW* window){
+void stampaCoccodrilli(Processo * coccodrilli[], WINDOW* window){
     
 for(int i=0; i < NUMERO_FLUSSI; i++){
     for(int j=0; j < MAX_COCCODRILLI; j++)
     {
-        stampaCoccodrillo(coccodrilli[i][j].item, window, i);
+        if (coccodrilli[i][j].pid != 0)
+            stampaCoccodrillo(coccodrilli[i][j].item, window, i);
         
     }
 }
@@ -65,12 +66,12 @@ for(int i=0; i < NUMERO_FLUSSI; i++){
     }
 }*/
 
-void avviaCoccodrilli(Flusso* fiume, Processo* coccodrilli[], int pipe_fd[], WINDOW * w) {
+void avviaCoccodrilli(Flusso* fiume, Processo* coccodrilli, int* pipe_fd) {
     pid_t temp;
 
-
-    for(int i = 0; i < NUMERO_FLUSSI; i++) {
-        for(int j=0; j< MAX_COCCODRILLI; j++){
+    while(1){
+        int i=0;
+        if(coccodrilli[i].pid == 0){
             temp = fork();
             if(temp < 0) {
                 perror("fork cocco");
@@ -78,17 +79,19 @@ void avviaCoccodrilli(Flusso* fiume, Processo* coccodrilli[], int pipe_fd[], WIN
             }
             else if(temp == 0) {
                 // Processo figlio
-                coccodrilli[i][j].pid = getpid();
-                coccodrillo(fiume[i], pipe_fd);
+                coccodrilli[i].pid = getpid();
+                coccodrilli[i].item.cod=i;
+                coccodrillo(fiume[i % NUMERO_FLUSSI], pipe_fd, i);
                 exit(1);
             }
-            
-            usleep(rand() % 500000);
         }
+        i++;
+        i=i%MAX_COCCODRILLI;
+        sleep(3);
     }
 }
 
-void coccodrillo(Flusso flusso, int pipe_fd[])
+void coccodrillo(Flusso flusso, int pipe_fd[], int j)
 {
     close(pipe_fd[0]);
     Oggetto coccodrillo={'c', flusso.y+1, flusso.direzione==DIR_RIGHT ? 1 : NCOLS};

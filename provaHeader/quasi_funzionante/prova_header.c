@@ -11,7 +11,7 @@ WINDOW* wgioco;
 
 void controllo(int pipe_fd[]);
 
-void cleanupGame(Flusso* fiume, Processo* coccodrilli);
+void cleanupGame( Processo* coccodrilli);
 
 int main()
 {
@@ -36,23 +36,29 @@ void controllo(int pipe_fd[])
 
     wgioco=newwin(NLINES, NCOLS, 0, 0);
 
-    Oggetto ranocchia={'r', NLINES-ALTEZZA_RANA-1, NCOLS/2};
+    Oggetto ranocchia={'r', NLINES-ALTEZZA_RANA-1, NCOLS/2, NULL};
     Oggetto temp, proiettile;
 
     Flusso* fiume=avviaFlussi();
-    Processo coccodrilli[NUMERO_FLUSSI][MAX_COCCODRILLI];
-    
-    for (int i=0; i < NUMERO_FLUSSI; i++){
-        for(int j=0; j < MAX_COCCODRILLI; j++){
-            coccodrilli[i][j].pid=0;
-            coccodrilli[i][j].item.id='c';
-            coccodrilli[i][j].item.y=10;
-            coccodrilli[i][j].item.x=10;
-        }
-        
-    }
+    Processo coccodrilli[MAX_COCCODRILLI];
 
-    avviaCoccodrilli(fiume, coccodrilli, pipe_fd, wgioco);
+
+    
+    mvwprintw(wgioco, NLINES-1, 0, "Cocco pos");
+    wrefresh(wgioco);
+    sleep(2);
+
+
+    
+        for(int j=0; j < MAX_COCCODRILLI; j++){
+            coccodrilli[j].pid=0;
+            coccodrilli[j].item.id='c';
+            coccodrilli[j].item.y=0;
+            coccodrilli[j].item.x=0;
+        }
+
+
+    avviaCoccodrilli(fiume, coccodrilli, pipe_fd);
     close(pipe_fd[1]);
 
     while(true)
@@ -85,13 +91,14 @@ void controllo(int pipe_fd[])
                 if(ranocchia.y>=NLINES-ALTEZZA_RANA) ranocchia.y=NLINES-ALTEZZA_RANA -1 ;
                 break;
             case 'q':
-                cleanupGame(fiume, coccodrilli); 
+                cleanupGame( coccodrilli); 
                 
                 break;
             case 'c':
                 int i=(temp.y-fiume[0].y)/4;
                 if(i >=0 && i < MAX_COCCODRILLI)
-                    coccodrilli[i][j].item=temp;
+                    coccodrilli[temp.cod].item=temp;
+                mvwprintw(wgioco, NLINES-1, 0, "Cocco pos: %d,%d", temp.x, temp.y);
                 
                 break;
         }
@@ -102,20 +109,9 @@ void controllo(int pipe_fd[])
 
 
 
-
-
-void liberaFlussi(Flusso* fiume) 
+void cleanupGame(  Processo* coccodrilli)
 {
-    if (fiume != NULL) {
-        free(fiume);
-    }
-}
-
-void cleanupGame(Flusso* fiume,  Processo* coccodrilli)
-{
-    echo();
     endwin();
-    liberaFlussi(fiume);
     for (int i=0; i < MAX_COCCODRILLI; i++)
         kill(coccodrilli[i].pid,9);
     
