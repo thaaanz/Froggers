@@ -30,9 +30,12 @@ void controllo(int* pipe_fd, int* pipe_inversa)
 
     
     avviaCoccodrilli(fiume, cricca, pipe_fd, wgioco);
+    flash();
     for(int i=0; i < MAX_COCCODRILLI; i++) //inizializzo tutto a 0 sennò nemmeno crea i processi
     {
         mvprintw(wgioco, cricca[i].item.y, 2, "cock %d", i);
+        //wrefresh(wgioco);
+        //sleep(3);
     }
     
 
@@ -93,12 +96,12 @@ void controllo(int* pipe_fd, int* pipe_inversa)
                 break;
             case 'c':
                 if(temp.item.dir >= 0 && temp.item.dir < MAX_COCCODRILLI) {
-                    cricca[temp.item.dir] = temp;
+                    cricca[temp.item.dir]= temp;
                 } //sennò mi dava segmentation fault, anche se mi fa pensare che non inizializzi bene tutti i processi
                 else ; //flash();
-                mvwprintw(wgioco, 10,10,"cod c%d", temp.item.dir); // zio pera gli passa codici a cazzo non lo so
+                /*mvwprintw(wgioco, 10,10,"cod c%d", temp.item.dir); // zio pera gli passa codici a cazzo non lo so
                 wrefresh(wgioco);
-                sleep(2);
+                sleep(2);*/
                 break;
 
         }

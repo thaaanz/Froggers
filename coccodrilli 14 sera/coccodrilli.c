@@ -43,7 +43,7 @@ void avviaCoccodrilli(Flusso* fiume, Processo* coccodrilli, int* pipe_fd, WINDOW
             else if(temp == 0) {
                 // Processo figlio
                 mvwprintw(wgioco, 1,1, "%d", i);
-                coccodrilli[i].pid = getpid();;
+                coccodrilli[i].pid = getpid();
                 coccodrilli[i].item.y=fiume[i].y;
                 coccodrilli[i].item.id='c';
                 coccodrilli[i].item.dir=i;
@@ -52,7 +52,7 @@ void avviaCoccodrilli(Flusso* fiume, Processo* coccodrilli, int* pipe_fd, WINDOW
             }
         }
         i++;
-        //i=i%MAX_COCCODRILLI;
+        //usleep(500000);
         
     }
     
@@ -61,13 +61,15 @@ void avviaCoccodrilli(Flusso* fiume, Processo* coccodrilli, int* pipe_fd, WINDOW
 
 void coccodrillo(Flusso flusso, int pipe_fd[], int cod)
 {
+    srand(getpid());
+    usleep(3000000 + rand() % 1000000);
     close(pipe_fd[0]);
     Processo coccodrillo={getpid(), {'c', flusso.y+1, flusso.dir==DIR_RIGHT ? 1 : NCOLS, cod}};
     
     while(coccodrillo.item.x > 1 - LARGHEZZA_COCCODRILLO && coccodrillo.item.x < NCOLS + LARGHEZZA_COCCODRILLO)
     {
         //flash();
-        write(pipe_fd[1], &coccodrillo, sizeof(Oggetto));
+        write(pipe_fd[1], &coccodrillo, sizeof(Processo));
         coccodrillo.item.x+=flusso.dir;
         
         int delay=fdelay(flusso.speed);
