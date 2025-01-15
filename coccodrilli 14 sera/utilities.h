@@ -14,7 +14,7 @@
 #define NUMERO_FLUSSI 8
 #define ALTEZZA_COCCODRILLO 2
 #define LARGHEZZA_COCCODRILLO 10
-#define MAX_COCCODRILLI 16
+#define MAX_COCCODRILLI 3 //per flusso
 #define ALTEZZA_TANE 5
 #define MAX_INTERVALLO_PROIETTILI 5
 #define DELAY 20000
@@ -23,7 +23,7 @@
 #define DIR_RIGHT 1
 #define DIR_LEFT -1
 #define NLINES 40
-#define NCOLS 50
+#define NCOLS 100
 #define MAX_PROIETTILI 2
 #define ALTEZZA_RANA 2
 #define LARGHEZZA_RANA 5

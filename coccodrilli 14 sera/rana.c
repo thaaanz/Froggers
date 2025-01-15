@@ -119,7 +119,7 @@ void granata(int direzione, int* pipe_fd, int* pipe_inversa)
     {
         granata.item.x+=direzione;
         write(pipe_fd[1], &granata, sizeof(Processo));
-        usleep(DELAY);
+        usleep(DELAY*4);
     }
 }
 

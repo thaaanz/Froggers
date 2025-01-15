@@ -18,7 +18,7 @@ Flusso* avviaFlussi()
         fiume[i].speed=1+(rand()%MAX_SPEED);
         fiume[i].y=coord_y;
 
-        coord_y-=4;
+        coord_y-=ALTEZZA_FLUSSO;
         direzione=-direzione;
     }
 

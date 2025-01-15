@@ -19,24 +19,18 @@ void controllo(int* pipe_fd, int* pipe_inversa)
 
     Flusso* fiume=avviaFlussi();
     
-    Processo  cricca[MAX_COCCODRILLI]; //cricca di coccodrilli
-    for(int i=0; i < MAX_COCCODRILLI; i++) //inizializzo tutto a 0 sennò nemmeno crea i processi
+    Processo  cricca[MAX_COCCODRILLI * NUMERO_FLUSSI]; //cricca di coccodrilli
+    for(int i=0; i < MAX_COCCODRILLI* NUMERO_FLUSSI; i++) //inizializzo tutto a 0 sennò nemmeno crea i processi
     {
         cricca[i].pid=0; 
-        cricca[i].item.x=1;
+        /*cricca[i].item.x=1;
         cricca[i].item.y=1;
-        cricca[i].item.dir=0;
+        cricca[i].item.dir=0;*/
     }
 
     
     avviaCoccodrilli(fiume, cricca, pipe_fd, wgioco);
     flash();
-    for(int i=0; i < MAX_COCCODRILLI; i++) //inizializzo tutto a 0 sennò nemmeno crea i processi
-    {
-        mvprintw(wgioco, cricca[i].item.y, 2, "cock %d", i);
-        //wrefresh(wgioco);
-        //sleep(3);
-    }
     
 
     close(pipe_fd[1]);
@@ -44,7 +38,7 @@ void controllo(int* pipe_fd, int* pipe_inversa)
 
     while(true)
     {
-        wclear(wgioco);
+        werase(wgioco);
         box(wgioco, ACS_VLINE, ACS_HLINE);
         //flash();
         
@@ -68,7 +62,8 @@ void controllo(int* pipe_fd, int* pipe_inversa)
                 }
         }*/
 
-        wrefresh(wgioco);
+        wnoutrefresh(wgioco);
+        doupdate();
 
         read(pipe_fd[0], &temp, sizeof(Processo));
         switch(temp.item.id)
@@ -95,17 +90,16 @@ void controllo(int* pipe_fd, int* pipe_inversa)
                 write(pipe_inversa[1], &rana, sizeof(Processo));
                 break;
             case 'c':
-                if(temp.item.dir >= 0 && temp.item.dir < MAX_COCCODRILLI) {
-                    cricca[temp.item.dir]= temp;
-                } //sennò mi dava segmentation fault, anche se mi fa pensare che non inizializzi bene tutti i processi
-                else ; //flash();
-                /*mvwprintw(wgioco, 10,10,"cod c%d", temp.item.dir); // zio pera gli passa codici a cazzo non lo so
-                wrefresh(wgioco);
-                sleep(2);*/
+                
+                 //flash();*/
+                cricca[temp.item.dir]= temp;
+                mvwprintw(wgioco, 10,10,"cod c%d", temp.item.dir); // zio pera gli passa codici a cazzo non lo so
+                //wrefresh(wgioco);
+                //usleep(400000);
                 break;
 
         }
 
-        usleep(DELAY);
+        usleep(1000);
     }
 }
