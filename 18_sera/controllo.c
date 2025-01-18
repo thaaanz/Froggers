@@ -38,12 +38,15 @@ void controllo(int* pipe_fd, int* pipe_inversa)
     time_t start=time(NULL);
     while(vite>0)
     {
+        //todo aggiungere un check per la vittoria
+        //todo mettere almeno i colori
+        //todo creare una pipesuono e un processo che gestisca la musica e i suoni di gioco(in quell trovato su github fanno così)
         //gestione stampa
         werase(wgioco);
         box(wgioco, ACS_VLINE, ACS_HLINE);
         box(whud,ACS_VLINE, ACS_HLINE );
             //per ora il tempo lo stampo nella box sopra poi vediamo
-        mvwprintw(whud, 1, 1, "tempo passato: %d", time(NULL)- start);
+        mvwprintw(whud, 1, 1, "tempo rimasto: %d", MAX_TEMPO - (time(NULL)- start)); //! qua possiamo fare una barra ma non me ne preoccuperei ora
         mvwprintw(whud, 1, 20, "vite: %d", vite);
         stampaTane(wgioco, tane);
         stampaMarciapiede(wgioco);
@@ -87,7 +90,7 @@ void controllo(int* pipe_fd, int* pipe_inversa)
                 if(rana.item.y>=NLINES-ALTEZZA_RANA) rana.item.y=NLINES-ALTEZZA_RANA-1;
                 break;
             case 'q':
-                sleep(10); break;
+                sleep(10); break; //! questo messo tipo pausa per il debug poi lo cambiamo
             case 'o':
                 int i=(temp.item.y - ALTEZZA_MARCIAPIEDE)/ALTEZZA_FLUSSO;
                 if(temp.item.dir==DIR_RIGHT) i*=2;
