@@ -10,7 +10,7 @@ void controllo(int* pipe_fd, int* pipe_inversa)
 {
     WINDOW* wgioco=newwin(NLINES, NCOLS, HUDLINES, 0); //finestra di gioco con coccodrilli e rana
     WINDOW* whud=newwin(HUDLINES, NCOLS, 0, 0); //finestra che segna le vite e il tempo
-    WINDOW* debug=newwin(20,20, 0, NCOLS);
+    WINDOW* debug=newwin(20,20, 0, NCOLS + TCOLS);
     WINDOW* wtempo=newwin(NLINES, TCOLS, HUDLINES, NCOLS + 1);
     //todo pensavo di fare una finestra verticale al lato che segna il tempo però poi vediamo
     
@@ -51,7 +51,6 @@ void controllo(int* pipe_fd, int* pipe_inversa)
         box(wgioco, ACS_VLINE, ACS_HLINE);
         handleHud(whud, vite , start);
         handleTempo(wtempo, start);
-        //mvwprintw(whud, 1, 1, "tempo rimasto: %d", MAX_TEMPO - (time(NULL)- start)); //! qua possiamo fare una barra ma non me ne preoccuperei ora
         mvwprintw(whud, 1, 20, "vite: %d", vite);
         stampaTane(wgioco, tane);
         stampaMarciapiede(wgioco);
@@ -75,12 +74,14 @@ void controllo(int* pipe_fd, int* pipe_inversa)
             }
         }
         
-
+        /*
         //check flussi
         for(int i=0; i<NUMERO_FLUSSI; i++)
         {
             mvwprintw(wgioco, fiume[i].y, 2, "Y:%d, dir:%d, speed:%d", fiume[i].y, fiume[i].dir, fiume[i].speed);
         }
+        */
+        
 
         wnoutrefresh(wgioco);
         wnoutrefresh(whud);
@@ -171,6 +172,12 @@ void controllo(int* pipe_fd, int* pipe_inversa)
             rana.item.x=NCOLS / 2 - LARGHEZZA_RANA / 2;
             rana.item.y=NLINES - ALTEZZA_RANA - 1;
             start=time(NULL);
+            for(int i=0; i < N_PROIETTILI; i++){
+                if(astuccio[i].pid >0){
+                    kill(astuccio[i].pid, 9);
+                }
+            }
+            avviaProiettili(astuccio); //inizializza di nuovo tutto 
         }
         usleep(1100);
     }

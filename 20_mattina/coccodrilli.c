@@ -60,15 +60,12 @@ void funzioneCoccodrillo(int* pipe_fd, Flusso flusso, int offset)
     int delay, starting_x;
     time_t last_shot=time(NULL);
     int shot_delay=(rand()%10)+2;
-    //int active_bullets=0;
 
     if (flusso.dir == DIR_RIGHT) starting_x = -LARGHEZZA_COCCODRILLO - (offset * (LARGHEZZA_COCCODRILLO*2));
     else starting_x = NCOLS + (offset * (LARGHEZZA_COCCODRILLO*2));
         
     Processo coccodrillo = {getpid(), {'c', flusso.y+1, starting_x, flusso.dir}};
     //!
-
-    //signal(SIGCHLD, SIG_IGN);
 
     while(true)
     {
@@ -84,7 +81,6 @@ void funzioneCoccodrillo(int* pipe_fd, Flusso flusso, int offset)
             
             if(pid_proiettile>0)
             {
-                //active_bullets++;
                 last_shot=time(NULL);
                 shot_delay=(rand()%10)+2;
             }
@@ -155,13 +151,8 @@ pid_t funzioneProiettile(int* pipe_fd, Processo coccodrillo) //* meglio passare 
         {
             write(pipe_fd[1], &proiettile, sizeof(Processo));
             proiettile.item.x+=proiettile.item.dir;
-            //if(proiettile.item.x<0||proiettile.item.x>NCOLS)
-            usleep(DELAY/2);
+            usleep(DELAY);
         }
-
-        //proiettile.item.dir=0;
-        //write(pipe_fd[1], &proiettile, sizeof(Processo));
-        _exit(5);
     }
     return pid;
 }
