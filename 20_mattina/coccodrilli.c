@@ -59,7 +59,7 @@ void funzioneCoccodrillo(int* pipe_fd, Flusso flusso, int offset)
     //!questo è di claudio    
     int delay, starting_x;
     time_t last_shot=time(NULL);
-    int shot_delay=(rand()%10)+2;
+    int shot_delay=(rand()%10)+1;
 
     if (flusso.dir == DIR_RIGHT) starting_x = -LARGHEZZA_COCCODRILLO - (offset * (LARGHEZZA_COCCODRILLO*2));
     else starting_x = NCOLS + (offset * (LARGHEZZA_COCCODRILLO*2));
@@ -82,7 +82,7 @@ void funzioneCoccodrillo(int* pipe_fd, Flusso flusso, int offset)
             if(pid_proiettile>0)
             {
                 last_shot=time(NULL);
-                shot_delay=(rand()%10)+2;
+                shot_delay=(rand()%10)+5;
             }
         }
 

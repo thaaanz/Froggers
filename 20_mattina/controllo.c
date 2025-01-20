@@ -10,7 +10,7 @@ void controllo(int* pipe_fd, int* pipe_inversa)
 {
     WINDOW* wgioco=newwin(NLINES, NCOLS, HUDLINES, 0); //finestra di gioco con coccodrilli e rana
     WINDOW* whud=newwin(HUDLINES, NCOLS, 0, 0); //finestra che segna le vite e il tempo
-    WINDOW* debug=newwin(20,20, 0, NCOLS + TCOLS);
+    WINDOW* debug=newwin(20,20, 0, NCOLS + TCOLS+ 5);
     WINDOW* wtempo=newwin(NLINES, TCOLS, HUDLINES, NCOLS + 1);
     //todo pensavo di fare una finestra verticale al lato che segna il tempo però poi vediamo
     
@@ -86,6 +86,7 @@ void controllo(int* pipe_fd, int* pipe_inversa)
         wnoutrefresh(wgioco);
         wnoutrefresh(whud);
         wnoutrefresh(wtempo);
+        wnoutrefresh(debug);
         doupdate();
 
         //lettura dalla pipe 
@@ -167,7 +168,7 @@ void controllo(int* pipe_fd, int* pipe_inversa)
                 }
                 break;
         }
-        reset=detectCollisione(&rana, cricca, tane, temp, wgioco, debug, &vite, time(NULL)-start, &punteggio);
+        reset=detectCollisione(&rana, cricca, astuccio, granate, tane, temp, wgioco, debug, &vite, time(NULL)-start, &punteggio);
         if(reset){ //resetto la posizione della rana e il tempo
             rana.item.x=NCOLS / 2 - LARGHEZZA_RANA / 2;
             rana.item.y=NLINES - ALTEZZA_RANA - 1;
@@ -226,7 +227,7 @@ void handleMorteRana(Processo* rana, int* vite, WINDOW* wgioco) {
 }
 
 // funzione principale per le collisioni
-_Bool detectCollisione(Processo* rana, Processo* cricca, _Bool* tane, Processo last, WINDOW* wgioco, WINDOW* debug, int* vite, int secondi, int* punti) {
+_Bool detectCollisione(Processo* rana, Processo* cricca, Processo* astuccio, Processo* granate, _Bool* tane, Processo last, WINDOW* wgioco, WINDOW* debug, int* vite, int secondi, int* punti) {
     // crea la box rana
     BoundingBox ranaBox = createBoundingBox(rana->item.x, rana->item.y, LARGHEZZA_RANA,ALTEZZA_RANA);
 
@@ -312,6 +313,35 @@ _Bool detectCollisione(Processo* rana, Processo* cricca, _Bool* tane, Processo l
         handleMorteRana(rana, vite, wgioco);
         return true;
     }
+
+
+    /*
+    //check rana e proiettile
+    for(int i=0; i < N_PROIETTILI; i++){
+        if(astuccio[i].pid < 0) continue; // se non è stato inizializzato va al prossimo ciclo
+        BoundingBox proiettileBox=createBoundingBox(astuccio[i].item.x, astuccio[i].item.y, 1, 1);
+        if(checksovrapposizione(ranaBox, proiettileBox)){
+            handleMorteRana(rana, vite, wgioco);
+            return true;
+        }
+    }*/
+    
+
+    // check granate e proiettili
+    for(int i=0; i < N_PROIETTILI; i++){
+        if(astuccio[i].pid < 0) continue;
+        BoundingBox proiettileBox=createBoundingBox(astuccio[i].item.x, astuccio[i].item.y, 1, 1);
+        for(int j=0; j< N_GRANATE; j++){
+            BoundingBox granataBox=createBoundingBox(granate[i].item.x, granate[i].item.y, 1, 1);
+            if(checksovrapposizione(granataBox, proiettileBox)){
+                kill(astuccio[i].pid, 9);
+                kill(granate[i].pid, 9);
+                astuccio[i].pid=-1;
+                granate[i].pid=-1;
+            }
+        }
+    }
+    return false;
 }
 
 //! da qua l'ho fatto io

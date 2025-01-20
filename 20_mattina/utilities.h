@@ -40,7 +40,6 @@
 #define MAX_VITE 3
 #define MAX_INTERVALLO_PROIETTILI 5
 #define DELAY 20000
-#define MAX_PROIETTILI 2
 #define N_GRANATE 16
 #define MAX_TEMPO 50
 #define N_PROIETTILI 32 //* max coccodrilli * numero flussi
