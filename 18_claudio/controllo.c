@@ -11,6 +11,7 @@ void controllo(int* pipe_fd, int* pipe_inversa)
     WINDOW* wgioco=newwin(NLINES, NCOLS, HUDLINES, 0); //finestra di gioco con coccodrilli e rana
     WINDOW* whud=newwin(HUDLINES, NCOLS, 0, 0); //finestra che segna le vite e il tempo
     WINDOW* debug=newwin(20,20, 0, NCOLS);
+    WINDOW* wtempo=newwin(NLINES, TCOLS, HUDLINES, NCOLS + 1);
     //todo pensavo di fare una finestra verticale al lato che segna il tempo però poi vediamo
     
     Flusso* fiume=avviaFlussi();
@@ -36,7 +37,7 @@ void controllo(int* pipe_fd, int* pipe_inversa)
 
     
     time_t start=time(NULL);
-    _Bool reset=false; // la uso per capire se devo resettare po rana e tempo
+    _Bool reset=false; // la uso per capire se devo resettare posizione rana e tempo
     while(vite>0)
     {
         reset=false;
@@ -46,9 +47,9 @@ void controllo(int* pipe_fd, int* pipe_inversa)
         //gestione stampa
         werase(wgioco);
         box(wgioco, ACS_VLINE, ACS_HLINE);
-        box(whud,ACS_VLINE, ACS_HLINE );
-            //per ora il tempo lo stampo nella box sopra poi vediamo
-        mvwprintw(whud, 1, 1, "tempo rimasto: %d", MAX_TEMPO - (time(NULL)- start)); //! qua possiamo fare una barra ma non me ne preoccuperei ora
+        handleHud(whud, vite , start);
+        handleTempo(wtempo, start);
+        //mvwprintw(whud, 1, 1, "tempo rimasto: %d", MAX_TEMPO - (time(NULL)- start)); //! qua possiamo fare una barra ma non me ne preoccuperei ora
         mvwprintw(whud, 1, 20, "vite: %d", vite);
         stampaTane(wgioco, tane);
         stampaMarciapiede(wgioco);
@@ -74,6 +75,7 @@ void controllo(int* pipe_fd, int* pipe_inversa)
 
         wnoutrefresh(wgioco);
         wnoutrefresh(whud);
+        wnoutrefresh(wtempo);
         doupdate();
 
         //lettura dalla pipe 
@@ -186,7 +188,7 @@ _Bool detectCollisione(Processo* rana, Processo* cricca, _Bool* tane, Processo l
                 *punti += 100;  //!da decidere quanti punti, messi a caso qua
                 return true;
             }
-            else {
+            else { // altrimenti la tana è occupata
                 handleMorteRana(rana, vite, wgioco);
                 return true;
             }
@@ -204,7 +206,7 @@ _Bool detectCollisione(Processo* rana, Processo* cricca, _Bool* tane, Processo l
     }
 
     // Check collisione con coccodrillo
-    bool isOnCoccodrillo = false;
+    _Bool isOnCoccodrillo = false;
     for(int i = 0; i < NUMERO_FLUSSI * MAX_COCCODRILLI; i++) {
         if(cricca[i].pid != 0) {  // prima controlla se è attivo
             BoundingBox coccoBox = createBoundingBox(cricca[i].item.x, cricca[i].item.y, LARGHEZZA_COCCODRILLO, ALTEZZA_COCCODRILLO);
@@ -250,3 +252,25 @@ _Bool detectCollisione(Processo* rana, Processo* cricca, _Bool* tane, Processo l
     }
 }
 
+//! da qua l'ho fatto io
+void handleHud(WINDOW* whud, int vite, int start){
+    werase(whud);
+    box(whud,ACS_VLINE, ACS_HLINE );
+
+    for(int i=0; i < vite; i++){ // per ogni vita stampa una rana
+        stampaRana((Oggetto){' ', 1, i* LARGHEZZA_RANA + 1, 0}, whud);
+    }
+    mvwprintw(whud, 1, 40, "%d", time(NULL)-start);
+}
+
+void handleTempo(WINDOW* wtempo, int start){
+    werase(wtempo);
+    box(wtempo, ACS_VLINE, ACS_HLINE);
+    int secondi=time(NULL)-start;
+    float ratio= (MAX_TEMPO-secondi) / (float)MAX_TEMPO; // quanto tempo è passato rispetto al massimo
+    int limit= ratio * (NLINES-1); //  indica quante righe occupo
+    for(int i=limit; i > 0 ; i--){
+        for(int j=1; j < TCOLS-1; j++)
+            mvwaddch(wtempo, NLINES-i, j, ' ' | A_REVERSE);
+    }
+}

@@ -15,5 +15,6 @@ _Bool checksovrapposizione(BoundingBox a, BoundingBox b);
 int checkTaneCollision(int x, int y);
 void handleMorteRana(Processo* rana, int* vite, WINDOW* wgioco);
 _Bool detectCollisione(Processo* rana, Processo* cricca, _Bool* tane, Processo last, WINDOW* wgioco, WINDOW* debug, int* vite, int secondi, int* punti);
+void handleHud(WINDOW* whud, int vite, int start);
 
 #endif
