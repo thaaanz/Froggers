@@ -1,12 +1,14 @@
 #include "utilities.h"
 #include "avvia.h"
 #include "controllo.h"
+#include "menu.h"
 
 int  main()
 {
     avviancurses();
-    menuIniziale();
-    sleep(5);
+    if(menuIniziale()){
+        return 0;
+    };
 
     int pipe_fd[2];
     int pipe_inversa[2];

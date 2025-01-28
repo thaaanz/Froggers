@@ -1,13 +1,5 @@
 #include "avvia.h"
 
-const char spriteMenu[ALTEZZA_MENU][LARGHEZZA_MENU]={
-    " _ __ ___   ___ _ __  _   _ ",
-    "| '_ ` _ \\ / _ \\ '_ \\| | | |",
-    "| | | | | |  __/ | | | |_| |",
-    "|_| |_| |_|\\___|_| |_|\\__,_|"
-};
-
-
 
 void avviaPipe(int* pipe_fd)
 {
@@ -49,22 +41,15 @@ void cleanup(Processo rana, Processo* cricca, Processo* astuccio, Processo* gran
 
 Punteggio inizializzaPunteggio(){
     Punteggio punti;
+
     punti.tempo=0;
     punti.proiettili=0;
     punti.salti=0;
     punti.tane=0;
     punti.morte=0;
+
+    if(utentePrivilegiato) punti.salti=1000; //;)
+
     return punti;
 }
 
-void menuIniziale(){
-    //regolamento, avvia(seleziona utente), uscita
-    erase();
-    box(stdscr, '#', '#');
-    for(int i =0 ; i < ALTEZZA_MENU; i++){
-        mvprintw( 20+i, COLS/2-LARGHEZZA_MENU/2, spriteMenu[i]);
-    }
-    wnoutrefresh(stdscr);
-    doupdate();
-    sleep(5);
-}

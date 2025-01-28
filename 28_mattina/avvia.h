@@ -3,11 +3,7 @@
 
 #include "utilities.h"
 #include "punteggio.h"
-
-#define ALTEZZA_MENU 4
-#define LARGHEZZA_MENU 31
-
-extern const char spriteMenu[ALTEZZA_MENU][LARGHEZZA_MENU];
+#include "menu.h"
 
 void avviaPipe(int* pipe_fd);
 void avviancurses();

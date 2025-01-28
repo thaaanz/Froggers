@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -c -Wall -g
 LDFLAGS = -lncurses
-OBJS = rana.o main.o controllo.o fiume.o avvia.o coccodrilli.o campo.o punteggio.o
+OBJS = rana.o main.o controllo.o fiume.o avvia.o coccodrilli.o campo.o punteggio.o menu.o
 
 a.out: $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS) -o a.out
@@ -29,6 +29,9 @@ campo.o: campo.c campo.h
 
 punteggio.o: punteggio.c punteggio.h
 	$(CC) $(CFLAGS) punteggio.c -o punteggio.o
+
+menu.o: menu.c menu.h
+	$(CC) $(CFLAGS) menu.c -o menu.o
 
 clean:
 	rm -f *.o a.out
