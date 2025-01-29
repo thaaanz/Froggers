@@ -204,6 +204,7 @@ void controllo(int* pipe_fd, int* pipe_inversa)
             }
             usleep(10000);
             avviaProiettili(astuccio); //inizializza di nuovo tutto 
+            inizializzaGranate(granate);
         }
 
         if(checkWin(tane)){
@@ -212,7 +213,7 @@ void controllo(int* pipe_fd, int* pipe_inversa)
         usleep(1100);
     }
     flash();
-    //menuFinale(punteggio, vite);
+    menuFinale(punteggio, vite);
     cleanup(rana, cricca, astuccio, granate);
 }
 
@@ -227,8 +228,8 @@ BoundingBox createBoundingBox(int x, int y, int larghezza, int altezza) {
 }
 
 _Bool checksovrapposizione(BoundingBox a, BoundingBox b) {
-    return (a.x < b.x + b.width &&
-            a.x + a.width > b.x &&
+    return (a.x + a.width <= b.x + b.width &&
+            a.x + a.width >= b.x &&
             a.y < b.y + b.height &&
             a.y + a.height > b.y);
 }
@@ -250,15 +251,16 @@ int checkTaneCollision(int x, int y) {
     return -1;
 }
 
-// Helper function to handle frog death
 void handleMorteRana(Processo* rana, int* vite, Punteggio* punti, WINDOW* wgioco) {
     (*vite)--;
     punti->morte += PUNTI_MORTE;
     
     werase(wgioco);
+    //!potremmo fare un figlet con manche over? o si incasina con la temporizzazione? 
     mvwprintw(wgioco, NLINES/2, NCOLS/2 - 5, "Vita persa");
     wnoutrefresh(wgioco);
     doupdate();
+
     }
 
 // funzione principale per le collisioni
@@ -365,10 +367,18 @@ _Bool detectCollisione(Processo* rana, Processo* cricca, Processo* astuccio, Pro
                     if(checksovrapposizione(granataBox, proiettileBox)){
                         punti->proiettili+=PUNTI_PROIETTILI;
 
-                        kill(astuccio[i].pid, 9);
-                        kill(granate[j].pid, 9);
-                        astuccio[i].pid=-1;
-                        granate[j].pid=-1;
+                        if(astuccio[i].pid > 1){
+                            kill(astuccio[i].pid, 9);
+                            astuccio[i].pid=-1;
+                        }
+                        
+                        if(granate[i].pid >1){
+                            kill(granate[j].pid, 9);
+                            granate[j].pid=-1;
+                        }
+                        
+                        
+                        
                     }
                 } 
             }

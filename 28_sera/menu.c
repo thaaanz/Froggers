@@ -9,10 +9,11 @@ const char spriteMenu[ALTEZZA_MENU][LARGHEZZA_MENU]={
 };
 
 const char spriteGameOver[ALTEZZA_GO][LARGHEZZA_GO]={
-    "/ _` |/ _` | '_ ` _ \\ / _ \\  / _ \\ \\ / / _ \\ '__|",
+    "  __ _  __ _ _ __ ___   ___    _____   _____ _ __ ",
+    " / _` |/ _` | '_ ` _ \\ / _ \\  / _ \\ \\ / / _ \\ '__|",
     "| (_| | (_| | | | | | |  __/ | (_) \\ V /  __/ |  ", 
-    "\\__, |\\__,_|_| |_| |_|\\___|  \\___/ \\_/ \\___|_|   ",
-    "|___/  ",
+    " \\__, |\\__,_|_| |_| |_|\\___|  \\___/ \\_/ \\___|_|   ",
+    " |___/  ",
 };
 const char spriteWin[ALTEZZA_WIN][LARGHEZZA_WIN]={
 " _   _  ___  _   _  __      _____  _ __ | |",
@@ -150,6 +151,8 @@ void selezionaUtente(WINDOW* wmenu){
 
 void menuFinale(Punteggio punti, int vite){
     //endwin();
+    clear();
+    refresh();
     WINDOW* wmenu=newwin(NLINES+HUDLINES, NCOLS, 0, 0);
     if(vite > 0){
         stampaWin(wmenu);
@@ -159,6 +162,29 @@ void menuFinale(Punteggio punti, int vite){
     }
 
     sleep(5);
+
+    //riepilogo punti, premi un tasto qualsiasi per andare avanti
+    int totale=punti.proiettili + punti.salti + punti.tane + punti.tempo - punti.morte;
+    wclear(wmenu);
+    box(wmenu, ":", ".");
+    mvwprintw(wmenu, 3, 4, "Hai totalizzato i seguenti punti: %d", totale); //!qua poi ci mettiamo il totale
+    wrefresh(wmenu);
+    getch();
+    mvwprintw(wmenu, 5, 4, "Chiusura tane: %d", punti.tane);
+    wrefresh(wmenu);
+    getch();
+    mvwprintw(wmenu, 7, 4, "Salti: %d", punti.tane);
+    wrefresh(wmenu);
+    getch();
+    mvwprintw(wmenu, 9, 4, "Esplosione dei proiettili: %d", punti.proiettili);
+    wrefresh(wmenu);
+    getch();
+    mvwprintw(wmenu, 11, 4, "Scorrere del tempo: %d", punti.tempo);
+    wrefresh(wmenu);
+    getch();
+    mvwprintw(wmenu, 13, 4, "Morti: -%d", punti.morte);
+    wrefresh(wmenu);
+    getch();
 }
 
 void stampaWin(WINDOW* w){
@@ -172,7 +198,6 @@ void stampaWin(WINDOW* w){
 
 void stampaGO(WINDOW* w){
     flash();
-    sleep(3);
     wclear(w);
 
     for(int i=0; i < ALTEZZA_GO; i++){

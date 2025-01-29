@@ -6,7 +6,7 @@
 
 #define ALTEZZA_MENU 4
 #define LARGHEZZA_MENU 31
-#define ALTEZZA_GO 4
+#define ALTEZZA_GO 5
 #define LARGHEZZA_GO 54
 #define ALTEZZA_WIN 5
 #define LARGHEZZA_WIN 49
