@@ -10,7 +10,7 @@ const char spriteCoccodrilloSinistra[ALTEZZA_COCCODRILLO][LARGHEZZA_COCCODRILLO]
     "<<<<<<<<<<"
 };
 
-void avviaCoccodrilli(Flusso* fiume, Thread* cricca, pthread_mutex_t m)
+void avviaCoccodrilli(Flusso* fiume, Thread* cricca, pthread_mutex_t* m)
 {
     int i=0, n=0; 
 
@@ -27,38 +27,46 @@ void avviaCoccodrilli(Flusso* fiume, Thread* cricca, pthread_mutex_t m)
     {
         for(int f=0; f<NUMERO_FLUSSI; f++) //f scorre i flussi
         {
-            pthread_t tid=generaCoccodrillo(fiume[f], (rand()%4), m, cricca[i].item); //random è l'offset per la partenza dei coccodrilli
+            pthread_t tid;
+            
+            Cocco c={cricca[i].item, m, fiume[f], (rand()%4)}; //inserisco i dati nella struttura
+            pthread_create(&tid, NULL, &funzioneCoccodrillo, &c); //creo il thread e gli passo la funzione 
+           // return tid; //restituisco il tid per metterlo nell'array
+            //pthread_t tid=generaCoccodrillo(fiume[f], (rand()%4), m, cricca[i].item); //random è l'offset per la partenza dei coccodrilli
             cricca[i].tid=tid; //genero il tid e lo assegno a ogni coccodrillo nell'array
             i++; //i scorre i coccodrilli in ogni flusso (verticalmente)
         }
+        
         n++;
     }
 }
 
-pthread_t generaCoccodrillo(Flusso flusso, int offset, pthread_mutex_t m, Oggetto coccodrillo)
+pthread_t generaCoccodrillo(Flusso flusso, int offset, pthread_mutex_t* m, Oggetto coccodrillo)
 {
+    flash();
     pthread_t tid;
-    Cocco c={coccodrillo, m, flusso, offset}; //inserisco i dati nella struttura
-    
-    pthread_create(&tid, NULL, &funzioneCoccodrillo, &c); //creo il thread e gli passo la funzione 
 
+    Cocco c={coccodrillo, m, flusso, offset}; //inserisco i dati nella struttura
+    //flash();
+    pthread_create(&tid, NULL, &funzioneCoccodrillo, &c); //creo il thread e gli passo la funzione 
     return tid; //restituisco il tid per metterlo nell'array
 }
 
 void* funzioneCoccodrillo(void* parametri)
 {
+    //flash();
     Cocco c=*(Cocco*) parametri; //cast dell'argomento della thread function
 
     int delay, starting_x; //velocità e x di partenza del coccodrillo
 
     if (c.f.dir == DIR_RIGHT) starting_x = -LARGHEZZA_COCCODRILLO - (c.offset * (LARGHEZZA_COCCODRILLO*2)); //se il coccodrillo va verso destra
     else starting_x = NCOLS + (c.offset * (LARGHEZZA_COCCODRILLO*2)); //se va verso sinistra
-        
-    Thread coccodrillo = {gettid(), {'c', c.f.y+1, starting_x, c.f.dir}};
+        //flash();
+    Thread coccodrillo = {pthread_self(), {'c', c.f.y+1, starting_x, c.f.dir}};
 
     while(true)
     {
-        scrivi(&c.mutex, coccodrillo); //scrivo sul buffer
+        scrivi(c.mutex, coccodrillo); //scrivo sul buffer
         coccodrillo.item.x+=coccodrillo.item.dir; //aggiorno la posizione
 
         //se il coccodrillo esce dallo schermo viene rigenerato dall'altra parte

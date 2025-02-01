@@ -24,10 +24,8 @@ void avviancurses()
     init_pair(COLORI_PROIETTILI, COLOR_BLACK, COLOR_RED);
 }
 
-Flusso* avviaFlussi()
-{
-    static Flusso fiume[NUMERO_FLUSSI];
-    
+void avviaFlussi(Flusso* fiume)
+{    
     srand(time(NULL));
     int direzione;
     
@@ -47,5 +45,4 @@ Flusso* avviaFlussi()
         direzione=-direzione;
     }
 
-    return fiume;
 }

@@ -4,6 +4,6 @@
 #include "utilities.h"
 
 void avviancurses();
-Flusso* avviaFlussi();
+void avviaFlussi(Flusso* fiume);
 
 #endif

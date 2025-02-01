@@ -7,12 +7,15 @@ void* controllo(void* mutex)
     //inizializzo le finestre
     WINDOW* wgioco=newwin(NLINES, NCOLS, HUDLINES, 0); //finestra di gioco con coccodrilli e rana
     WINDOW* whud=newwin(HUDLINES, NCOLS, 0, 0); //finestra che segna le vite e il tempo
-    WINDOW* debug=newwin(40,20, 0, NCOLS + TCOLS+ 5);
+    WINDOW* debug=newwin(40,70, 0, NCOLS + TCOLS+ 5);
     WINDOW* wtempo=newwin(NLINES -1, TCOLS, HUDLINES, NCOLS ); // colonna del tempo
 
     Thread temp;
     Thread cricca[NUMERO_FLUSSI*MAX_COCCODRILLI]; //cricca di coccodrilli
-    Flusso* fiume=avviaFlussi();
+    Flusso fiume[NUMERO_FLUSSI];
+    avviaFlussi(fiume);
+
+    avviaCoccodrilli(fiume, cricca, m);
 
     _Bool tane[NUMERO_TANE]={0}; //essenzialmente se è false la tana è libera 
 
@@ -20,11 +23,12 @@ void* controllo(void* mutex)
     while(true)
     {
         werase(wgioco);
-        stampaCoccodrilli(cricca, wgioco);
+        werase(debug);
         stampaFiume(wgioco);
         stampaTane(wgioco, tane);
         stampaMarciapiede(wgioco);
         stampaSponda(wgioco);
+        stampaCoccodrilli(cricca, wgioco);
         wnoutrefresh(wgioco);
         doupdate();
 
@@ -33,11 +37,12 @@ void* controllo(void* mutex)
         switch(temp.item.id)
         {
             case 'c': //se legge un coccodrillo
+
                 for(int i=0; i<NUMERO_FLUSSI*MAX_COCCODRILLI; i++) //scorre l'array
                 {
                     if(cricca[i].tid==temp.tid) //cerca il coccodrillo corrispondente
                     {
-                        cricca[i]=temp; //aggiora il coccodrillo
+                        cricca[i]=temp; //aggiorna il coccodrillo
                     }
                 }
                 break;
