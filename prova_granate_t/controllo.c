@@ -79,17 +79,17 @@ void* controllo(void* mutex)
                         trovate = true;
                         
                         // Check se è fuori dai bordi
-                        if (granate[i].item.x < 0 || granate[i].item.y > NCOLS) {
+                        if (granate[i].item.x < 0 || granate[i].item.x > NCOLS) {
                             if (granate[i].tid > 0) {
-                                    flash();
-                                    pthread_cancel(granate[i].tid);
+                                    //flash();
+                                    pthread_cancel(granate[i].tid)==0;
                                     pthread_join(granate[i].tid, NULL);
                                     granate[i].tid = -1;                
                                 }
                         }
                         break;
                     }
-                }
+                } 
                 
                 if (!trovate) {
                     for (int i = 0; i < N_GRANATE; i++) {
