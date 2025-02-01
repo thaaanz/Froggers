@@ -12,10 +12,11 @@ void* controllo(void* mutex)
 
     Thread temp;
     Thread cricca[NUMERO_FLUSSI*MAX_COCCODRILLI]; //cricca di coccodrilli
+    Thread astuccio[N_PROIETTILI];
     Flusso fiume[NUMERO_FLUSSI];
     avviaFlussi(fiume);
-
     avviaCoccodrilli(fiume, cricca, m);
+    avviaProiettili(astuccio);
 
     _Bool tane[NUMERO_TANE]={0}; //essenzialmente se è false la tana è libera 
 
@@ -29,6 +30,15 @@ void* controllo(void* mutex)
         stampaMarciapiede(wgioco);
         stampaSponda(wgioco);
         stampaCoccodrilli(cricca, wgioco);
+
+        for(int i=0; i<N_PROIETTILI; i++)
+        {
+            if(astuccio[i].tid!=-1)
+            {
+                stampaProiettile(astuccio[i].item, wgioco);
+            }
+        }
+
         wnoutrefresh(wgioco);
         doupdate();
 
@@ -45,6 +55,44 @@ void* controllo(void* mutex)
                         cricca[i]=temp; //aggiorna il coccodrillo
                     }
                 }
+                break;
+
+            case '-':
+                _Bool trovati = false;
+
+                for (int i = 0; i < N_PROIETTILI; i++) {
+                    if (astuccio[i].tid == temp.tid) {
+                        astuccio[i] = temp;
+                        trovati = true;
+                        
+                        // Check se è fuori dai bordi
+                        if (astuccio[i].item.x < 0 || astuccio[i].item.x > NCOLS) {
+                            if (astuccio[i].tid > 0) {
+                                    //flash();
+                                    pthread_cancel(astuccio[i].tid);
+                                    pthread_join(astuccio[i].tid, NULL);
+                                    astuccio[i].tid = -1;                
+                                }
+                        }
+                        break;
+                    }
+                } 
+                
+                if (!trovati) {
+                    for (int i = 0; i < N_PROIETTILI; i++) {
+                        if (astuccio[i].tid == -1 ) { //! ho cambiato da <0 a ==-1 e ora sembra che vada???
+                            astuccio[i] = temp;
+                            trovati = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if (!trovati && temp.tid > 1) {
+                    pthread_cancel(temp.tid);
+                    pthread_join(temp.tid, NULL);
+                }
+
                 break;
         }
 

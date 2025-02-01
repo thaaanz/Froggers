@@ -58,6 +58,8 @@ void* funzioneCoccodrillo(void* parametri)
     Cocco c=*(Cocco*) parametri; //cast dell'argomento della thread function
 
     int delay, starting_x; //velocità e x di partenza del coccodrillo
+    time_t last_shot=time(NULL);
+    int shot_delay=(rand()%10)+1;
 
     if (c.f.dir == DIR_RIGHT) starting_x = -LARGHEZZA_COCCODRILLO - (c.offset * (LARGHEZZA_COCCODRILLO*2)); //se il coccodrillo va verso destra
     else starting_x = NCOLS + (c.offset * (LARGHEZZA_COCCODRILLO*2)); //se va verso sinistra
@@ -72,6 +74,18 @@ void* funzioneCoccodrillo(void* parametri)
         //se il coccodrillo esce dallo schermo viene rigenerato dall'altra parte
         if(coccodrillo.item.dir==DIR_RIGHT && coccodrillo.item.x>NCOLS) coccodrillo.item.x=-LARGHEZZA_COCCODRILLO;
         if(coccodrillo.item.dir==DIR_LEFT && coccodrillo.item.x<-LARGHEZZA_COCCODRILLO) coccodrillo.item.x=NCOLS;
+
+        if(time(NULL)-last_shot>=shot_delay)
+        {
+           pthread_t tid_proiettile;
+           pthread_create(&tid_proiettile, NULL, &funzioneProiettile, &c);
+
+            if(tid_proiettile>0)
+            {
+                last_shot=time(NULL);
+                shot_delay=(rand()%10)+5;
+            }
+        }
 
         delay=fdelay(c.f.speed); //stabilisco il delay in base al flusso
         usleep(delay);
@@ -105,4 +119,43 @@ void stampaCoccodrilli(Thread* cricca, WINDOW* wgioco)
         }
     }
     wattroff(wgioco, COLOR_PAIR(COLORI_COCCODRILLO));
+}
+
+//PROIETTILI
+void avviaProiettili(Thread* astuccio)
+{
+    for(int i=0; i<N_PROIETTILI; i++)
+    {
+        astuccio[i].tid=-1;
+        astuccio[i].item.id='-';
+        astuccio[i].item.y=0;
+        astuccio[i].item.x=0;
+        astuccio[i].item.dir=0;
+    }
+}
+
+void* funzioneProiettile(void* parametri) 
+{
+    Cocco c=*(Cocco*) parametri; //cast dell'argomento della thread function
+
+    Thread proiettile={gettid(), {'-', c.item.y+1, c.item.x+(c.item.dir==DIR_RIGHT? LARGHEZZA_COCCODRILLO : 0), c.item.dir}};
+    
+    time_t start=time(NULL);
+    
+    while(1)
+    {
+        flash();
+        scrivi(c.mutex, proiettile);
+        proiettile.item.x+=proiettile.item.dir;
+        usleep(DELAY*2);
+    }
+}
+
+void stampaProiettile(Oggetto proiettile, WINDOW* wgioco)
+{
+    wattron(wgioco, COLOR_PAIR(COLORI_PROIETTILI));
+    wattron(wgioco, A_BOLD); 
+    mvwaddch(wgioco, proiettile.y, proiettile.x, proiettile.id);
+    wattroff(wgioco, A_BOLD);
+    wattroff(wgioco, COLOR_PAIR(COLORI_PROIETTILI));
 }
