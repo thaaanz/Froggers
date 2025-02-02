@@ -59,7 +59,7 @@
 #define MAX_INTERVALLO_PROIETTILI 5
 #define DELAY_RANA 20000
 #define DELAY_PROIETTILE 40000
-#define DELAY_GRANATA 35
+#define DELAY_GRANATA 35000
 #define N_GRANATE 20
 #define MAX_TEMPO 60
 #define N_PROIETTILI 10//* max coccodrilli * numero flussi

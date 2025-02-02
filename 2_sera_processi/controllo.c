@@ -2,8 +2,6 @@
 
 void controllo(int* pipe_fd, int* pipe_inversa)
 {
-
-
     WINDOW* wgioco=newwin(NLINES, NCOLS, HUDLINES, 0); //finestra di gioco con coccodrilli e rana
     WINDOW* whud=newwin(HUDLINES, NCOLS, 0, 0); //finestra che segna le vite e il tempo
     WINDOW* wtempo=newwin(NLINES -1, TCOLS, HUDLINES, NCOLS ); // colonna del tempo
@@ -11,6 +9,7 @@ void controllo(int* pipe_fd, int* pipe_inversa)
     wbkgd(whud, COLOR_PAIR(COLORI_HUD));
     wbkgd(wtempo, COLOR_PAIR(COLORI_TEMPO));
 
+    //inizializzazioni
     Flusso* fiume=avviaFlussi();
     Processo rana=avviaRana(pipe_fd, pipe_inversa);
     Processo cricca[NUMERO_FLUSSI*MAX_COCCODRILLI];//cricca di coccodrilli
@@ -21,12 +20,9 @@ void controllo(int* pipe_fd, int* pipe_inversa)
     int vite=MAX_VITE;
     Punteggio punteggio=inizializzaPunteggio();
 
-
-    temp.pid=0; //così al primo detect collisione non succede nulla
-
     inizializzaProiettili(astuccio); // inizializza i pid 
-    avviaCoccodrilli(pipe_fd, fiume, cricca); //avvia i processi coccodrillo
     inizializzaGranate(granate); //inizializza l'array
+    avviaCoccodrilli(pipe_fd, fiume, cricca); //avvia i processi coccodrillo
 
     close(pipe_fd[1]);
     close(pipe_inversa[0]);
@@ -40,6 +36,8 @@ void controllo(int* pipe_fd, int* pipe_inversa)
         //todo creare una pipesuono e un processo che gestisca la musica e i suoni di gioco(in quell trovato su github fanno così)
         //gestione stampa
         werase(wgioco);
+        werase(whud);
+        werase(wtempo);
         handleHud(whud, vite, punteggio);
         handleTempo(wtempo, start);
         mvwprintw(whud, 1, 20, "vite: %d", vite);
@@ -394,8 +392,7 @@ _Bool detectCollisione(Processo* rana, Processo* cricca, Processo* astuccio, Pro
 }
 
 void handleHud(WINDOW* whud, int vite, Punteggio punti){
-    werase(whud);
-    box(whud,ACS_VLINE, ACS_HLINE );
+    box(whud, ACS_VLINE, ACS_HLINE);
 
     for(int i=0; i < vite; i++){ // per ogni vita stampa una rana
         stampaRana((Oggetto){' ', 1, i* LARGHEZZA_RANA + 1, 0}, whud);
@@ -406,8 +403,7 @@ void handleHud(WINDOW* whud, int vite, Punteggio punti){
 }
 
 void handleTempo(WINDOW* wtempo, int start){
-    werase(wtempo);
-    box(wtempo, ACS_VLINE, ACS_HLINE);
+    
     int secondi=time(NULL)-start;
     float ratio= (MAX_TEMPO-secondi) / (float)MAX_TEMPO; // quanto tempo è passato rispetto al massimo
     int limit= ratio * (NLINES-1); //  indica quante righe occupo
