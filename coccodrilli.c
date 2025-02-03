@@ -69,13 +69,13 @@ void* funzioneCoccodrillo(void* parametri)
         if(coccodrillo.item.dir==DIR_LEFT && coccodrillo.item.x<-LARGHEZZA_COCCODRILLO) coccodrillo.item.x=NCOLS;
         parametro.item=coccodrillo.item;
 
-        /*if(time(NULL)-last_shot>=shot_delay)
+        if(time(NULL)-last_shot>=shot_delay)
         {
             pthread_t tid_proiettile;
             pthread_create(&tid_proiettile, NULL, &funzioneProiettile, &parametro);
             last_shot=time(NULL);
             shot_delay=(rand()%10)+5;
-        }*/
+        }
 
         delay=fdelay(c.f.speed); //stabilisco il delay in base al flusso
         usleep(delay);

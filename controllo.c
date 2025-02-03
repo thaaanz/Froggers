@@ -82,6 +82,7 @@ void *controllo(void *mutex)
         switch (temp.item.id)
         {
         case 'r':
+            rana.tid=temp.tid;
             rana.item.x += temp.item.x;
             rana.item.y += temp.item.y;
             if (rana.item.x <= 0)
@@ -244,8 +245,8 @@ void *controllo(void *mutex)
         usleep(DELAY_CONTROLLO);
     }
     // fuori dal loop principale
-    menuFinale(punti, vite);
     cleanup(rana, cricca, astuccio, granate, wgioco, whud, debug, wtempo);
+    menuFinale(punti, vite);
     flash();
     pthread_exit(NULL);
 }

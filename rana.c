@@ -12,7 +12,7 @@ const Thread spara= {0,{'g', 0, 0, NULL}};
 Thread avviaRana (pthread_mutex_t* mutex) {
     pthread_t tid_rana;
     pthread_create(&tid_rana, NULL, &funzioneRana, mutex);
-    Thread rana={pthread_self(),{'r', NLINES- ALTEZZA_RANA-1, NCOLS/2, NULL }}; 
+    Thread rana={tid_rana,{'r', NLINES- ALTEZZA_RANA-1, NCOLS/2, NULL }}; 
     return rana;
 }
 
@@ -21,7 +21,7 @@ void* funzioneRana(void * mutex)
     pthread_mutex_t* m=(pthread_mutex_t*) mutex;
     Thread rana;
     int c;
-
+    rana.tid=pthread_self();
     _Bool f=true;
     while(true)
     {

@@ -71,7 +71,7 @@ void cleanup(Thread rana, Thread* cricca, Thread* astuccio, Thread* granate, WIN
     
      
         pthread_cancel(rana.tid);
-        //pthread_join(rana.tid, NULL);
+        pthread_join(rana.tid, NULL);
 
     
     flash();
