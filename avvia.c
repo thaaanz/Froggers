@@ -1,63 +1,117 @@
-#include "main.c"
+#include "avvia.h"
 
-void avviaPipe(int pipe_fd[2]){
 
-    if (pipe(pipe_fd) == -1){
-		perror("Pipe fallita");
-		exit(1);
-	}
-}
+/*void avviaPipe(int* pipe_fd)
+{
+    if(pipe(pipe_fd)==-1)
+    {
+        perror("pipe fallita");
+        exit(1);
+    }
+}*/
 
-void avviancurses(){
+void avviancurses()
+{
     initscr();
     noecho();
     cbreak();
     curs_set(0);
     keypad(stdscr, TRUE);
+    //nodelay(stdscr, true);
+    //start_color(); 
+
+    //inizializzazione dei colori
+    init_pair(COLORI_RANA, COLOR_BLACK, COLOR_GREEN);
+    init_color(COLOR_DARK_GREEN, 0, 500, 0);
+    init_pair(COLORI_COCCODRILLO, COLOR_DARK_GREEN, COLOR_DARK_BLUE);
+    init_pair(COLORI_HUD, COLOR_MAGENTA, COLOR_BLACK);
+    init_color(COLOR_GRAY, 190, 190, 190);
+    init_pair(COLORI_TANE, COLOR_GRAY, COLOR_DARK_GREEN);
+    init_pair(COLORI_TEMPO, COLOR_RED, COLOR_BLACK);
+    init_color(COLOR_DARK_BLUE, 10, 10, 400);
+    init_pair(COLORI_FIUME, COLOR_DARK_BLUE, COLOR_BLUE);
+    init_pair(COLORI_MARCIAPIEDE, COLOR_GRAY, COLOR_WHITE);
+    init_color(COLOR_BROWN, 600, 300, 0);
+    init_pair(COLORI_SPONDA, COLOR_BROWN, COLOR_BROWN);
+    init_pair(COLORI_PROIETTILI, COLOR_BLACK, COLOR_RED);
 }
 
-void avviaGioco(int pipe_fd[2]){
+void cleanup(Thread rana, Thread* cricca, Thread* astuccio, Thread* granate, WINDOW* wgioco, WINDOW* whud, WINDOW* debug, WINDOW* wtempo)
+{
 
-    close(pipe_fd[1]);
-    avviaRana(pipe_fd);
+    delwin(wgioco);
+    delwin(whud);
+    delwin(debug);
+    delwin(wtempo);
 
-    //loop principale
-    while(vite > 0){ //da capire dove salvare queste vite, idealmente in una strttura
-        lettura(pipe_fd[0]); // anche qua bisogna vedere in che strttura salvare le cose lette dalla pipe
-
-        detectCollsione(flagCollisione); //= true se trova collisioni
-
-        if(flagCollisione){
-            gestisciCollisione(); // da passare la matrice in modo che gestisca
+    for(int i=0; i<NUMERO_FLUSSI*MAX_COCCODRILLI; i++)
+    {
+        if(cricca[i].tid != -1){
+            pthread_cancel(cricca[i].tid);
+            pthread_join(cricca[i].tid, NULL);
         }
-        else{
-            aggiornaSchermo();
+    }
+
+    for(int i=0; i<N_PROIETTILI; i++)
+    {
+        if(astuccio[i].tid != -1){
+            pthread_cancel(astuccio[i].tid);
+            pthread_join(astuccio[i].tid, NULL);
         }
-
-        stampaInfoGame(); //stampa di vite tempo etc, da aggiornare a ogni ciclo oppure solo quando cambia?(una volta al secondo)
-
-        gestioneTana(); // se si è arrivati alla tana bisogna cancellare tutto lo schermo e far ripartire i processi
+        
+    }
     
-        avviaCock(); //controlla se sono morti coccodrilli e se c'è spazio ne spawna altri, memorizza id velocità etc nella struttura principale(?)
+    for(int i=0; i<N_GRANATE; i++)
+    {
+        if(granate[i].tid != -1){
+            pthread_cancel(granate[i].tid);
+            pthread_join(granate[i].tid, NULL);
+        }
     }
+    
+     
+        pthread_cancel(rana.tid);
+        //pthread_join(rana.tid, NULL);
 
+    
+    flash();
 }
 
-void avviaRana(int pipe[2]){
-    pid_t pid;
-    pid=fork();
-    if (pid < 0){
-        perror("fork fallita");
-    }
-    else if(pid == 0){
-        movimentoRana(pipe);
-    }
-    return;
+
+Punteggio inizializzaPunteggio(){
+    Punteggio punti;
+
+    punti.tempo=0;
+    punti.proiettili=0;
+    punti.salti=0;
+    punti.tane=0;
+    punti.morte=0;
+
+    if(utentePrivilegiato) punti.salti=1000; //;)
+
+    return punti;
 }
 
-void avviaCock(int pipe[2]){
-    //qua bisogna fare un for per vedere se ci sono spazi disponibili e poi le varie fork per i processi
-    // e idelmente chiamare la funzione "cock" che gestisce i movimenti, prima però va deciso verso e velocità del flusso
-    // da gestire in fase di inizializzazione
+
+void avviaFlussi(Flusso* fiume)
+{    
+    srand(time(NULL));
+    int direzione;
+    
+    do{
+        direzione= -1+(rand()%3);
+    }while(direzione==0);
+
+    int coord_y=NLINES-ALTEZZA_RANA-ALTEZZA_MARCIAPIEDE; 
+
+    for(int i=0; i<NUMERO_FLUSSI; i++)
+    {
+        fiume[i].dir=direzione;
+        fiume[i].speed=1+(rand()%MAX_SPEED);
+        fiume[i].y=coord_y;
+
+        coord_y-=4;
+        direzione=-direzione;
+    }
 
 }
