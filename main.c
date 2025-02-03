@@ -21,6 +21,8 @@ int main()
     pthread_mutex_init(&mutex, NULL);
     do
     {
+        clear();
+        refresh();
         pthread_t tid_controllo;
         pthread_create(&tid_controllo, NULL, &controllo, &mutex);
         pthread_join(tid_controllo, NULL);
