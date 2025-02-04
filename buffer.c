@@ -1,44 +1,43 @@
 #include "buffer.h"
 
-// Define the external buffer instance
-Buffer b = {.w = 0, .r = 0};
+// definizione buffer come risorsa globale
+Buffer b = {.w = 0, .r = 0}; //w indice di scrittura, r indice di lettura
 
-// Function to read from the buffer
+// lettura dal buffer
 Thread leggi(pthread_mutex_t* mutex) {
-    Thread obj = {0, {0}}; // Initialize an empty Thread object
+    Thread obj = {0, {0}}; // inizializza thread vuoto
 
     pthread_mutex_lock(mutex);
 
-    // Wait until the buffer is not empty
+    // wait quando il buffer è vuoto
     while (b.w == b.r) {
         pthread_mutex_unlock(mutex);
-        // Optionally, sleep or yield to avoid busy-waiting
+        //usleep(DELAY_MUTEX);
         pthread_mutex_lock(mutex);
     }
 
-    // Read the Thread object from the buffer
+    // lettura dal buffer
     obj = b.buffer[b.r];
-    b.r = (b.r + 1) % DIM_BUFFER; // Increment the read index
+    b.r = (b.r + 1) % DIM_BUFFER; // incremento indice di lettura
 
     pthread_mutex_unlock(mutex);
 
     return obj;
 }
 
-// Function to write to the buffer
-void scrivi(pthread_mutex_t* mutex, Thread boh) {
+// scrittura nel buffer
+void scrivi(pthread_mutex_t* mutex, Thread obj) {
     pthread_mutex_lock(mutex);
 
-    // Wait until the buffer is not full
+    // Wait quando il buffer è pieno
     while ((b.w + 1) % DIM_BUFFER == b.r) {
         pthread_mutex_unlock(mutex);
-        // Optionally, sleep or yield to avoid busy-waiting
         pthread_mutex_lock(mutex);
     }
 
-    // Write the Thread object to the buffer
-    b.buffer[b.w] = boh;
-    b.w = (b.w + 1) % DIM_BUFFER; // Increment the write index
+    // scrittura nel buffer
+    b.buffer[b.w] = obj;
+    b.w = (b.w + 1) % DIM_BUFFER; // incremento indice di scrittura
 
     pthread_mutex_unlock(mutex);
 }

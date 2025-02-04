@@ -17,8 +17,8 @@ void avviancurses()
     cbreak();
     curs_set(0);
     keypad(stdscr, TRUE);
-    //nodelay(stdscr, true);
-    //start_color(); 
+    nodelay(stdscr, true);
+    start_color(); 
 
     //inizializzazione dei colori
     init_pair(COLORI_RANA, COLOR_BLACK, COLOR_GREEN);
@@ -34,14 +34,16 @@ void avviancurses()
     init_color(COLOR_BROWN, 600, 300, 0);
     init_pair(COLORI_SPONDA, COLOR_BROWN, COLOR_BROWN);
     init_pair(COLORI_PROIETTILI, COLOR_BLACK, COLOR_RED);
+    init_pair(GREEN_TEMPO, COLOR_GREEN, COLOR_GREEN);
+    init_pair(YELLOW_TEMPO, COLOR_YELLOW, COLOR_YELLOW);
+    init_pair(RED_TEMPO, COLOR_RED, COLOR_RED);
 }
 
-void cleanup(Thread rana, Thread* cricca, Thread* astuccio, Thread* granate, WINDOW* wgioco, WINDOW* whud, WINDOW* debug, WINDOW* wtempo)
+void cleanup(Thread rana, Thread* cricca, Thread* astuccio, Thread* granate, WINDOW* wgioco, WINDOW* whud, WINDOW* wtempo)
 {
 
     delwin(wgioco);
     delwin(whud);
-    delwin(debug);
     delwin(wtempo);
 
     for(int i=0; i<NUMERO_FLUSSI*MAX_COCCODRILLI; i++)
@@ -72,9 +74,6 @@ void cleanup(Thread rana, Thread* cricca, Thread* astuccio, Thread* granate, WIN
      
         pthread_cancel(rana.tid);
         pthread_join(rana.tid, NULL);
-
-    
-    flash();
 }
 
 

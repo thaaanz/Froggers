@@ -207,7 +207,6 @@ void menuFinale(Punteggio punti, int vite){
 void stampaWin(WINDOW* w){
      wclear(w);
     for(int i=0; i < ALTEZZA_WIN; i++){
-        flash();
         mvwprintw(w, 2+i, NCOLS/2-LARGHEZZA_WIN/2, spriteWin[i]);
     }
     wrefresh(w);

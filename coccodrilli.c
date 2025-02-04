@@ -39,18 +39,15 @@ void avviaCoccodrilli(Flusso* fiume, Thread* cricca, pthread_mutex_t* m)
 
 pthread_t generaCoccodrillo(Flusso flusso, int offset, pthread_mutex_t* m, Oggetto coccodrillo)
 {
-    flash();
     pthread_t tid;
 
     Cocco c={coccodrillo, m, flusso, offset}; //inserisco i dati nella struttura
-    //flash();
     pthread_create(&tid, NULL, &funzioneCoccodrillo, &c); //creo il thread e gli passo la funzione 
     return tid; //restituisco il tid per metterlo nell'array
 }
 
 void* funzioneCoccodrillo(void* parametri)
 {
-    //flash();
     Cocco c=*((Cocco*) parametri); //cast dell'argomento della thread function
     Params parametro={c.item, c.mutex};
     int delay, starting_x; //velocità e x di partenza del coccodrillo
@@ -112,7 +109,7 @@ void stampaCoccodrilli(Thread* cricca, WINDOW* wgioco)
 }
 
 //PROIETTILI
-void avviaProiettili(Thread* astuccio)
+void inizializzaProiettili(Thread* astuccio)
 {
     for(int i=0; i<N_PROIETTILI; i++)
     {

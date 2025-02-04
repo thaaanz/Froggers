@@ -48,6 +48,9 @@
 #define COLORI_MARCIAPIEDE 7
 #define COLORI_SPONDA 8
 #define COLORI_PROIETTILI 9
+#define GREEN_TEMPO 10
+#define YELLOW_TEMPO 11
+#define RED_TEMPO 12
 #define COLOR_DARK_GREEN 8  // Usa un numero > 7 per colori custom
 #define COLOR_GRAY 9
 #define COLOR_DARK_BLUE 10
@@ -62,6 +65,7 @@
 #define DELAY_RANA 20000
 #define DELAY_GRANATA 35000
 #define DELAY_PROIETTILE 40000
+#define DELAY_MUTEX 1000
 #define N_GRANATE 20
 #define MAX_TEMPO 60
 #define N_PROIETTILI 32//* max coccodrilli * numero flussi

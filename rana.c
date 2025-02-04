@@ -27,7 +27,6 @@ void* funzioneRana(void * mutex)
     {
         rana.item.id='r'; rana.item.y=0; rana.item.x=0; // scrive sulla pipe le coordinate relative
         c=(int)getch(); //lettura input tastiera
-        //flash();
         switch(c)
         {
             case KEY_UP:
@@ -108,11 +107,11 @@ void* granata(void* params)
     Thread granata;
     granata.item=p->item;
     granata.tid = pthread_self();
+    int oldstate;
   
     while(true) {
         granata.item.x += granata.item.dir;
         scrivi(m, granata);
-        pthread_testcancel();
         usleep(DELAY_GRANATA);
     }
     return NULL;

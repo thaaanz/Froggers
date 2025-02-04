@@ -6,33 +6,26 @@ void *controllo(void *mutex)
 
     WINDOW *wgioco = newwin(NLINES, NCOLS, HUDLINES, 0); // finestra di gioco con coccodrilli e rana
     WINDOW *whud = newwin(HUDLINES, NCOLS, 0, 0);        // finestra che segna le vite e il tempo
-    WINDOW *debug = newwin(40, 40, 0, NCOLS + TCOLS + 5);
     WINDOW *wtempo = newwin(NLINES - 1, TCOLS, HUDLINES, NCOLS); // colonna del tempo
 
+    wbkgd(whud, COLOR_PAIR(COLORI_HUD));
+    wbkgd(wtempo, COLOR_PAIR(COLORI_TEMPO));
+
     // inizializzazioni
-    Thread temp;
     Flusso fiume[NUMERO_FLUSSI];
     avviaFlussi(fiume);
     Thread rana = avviaRana(m);
     Thread cricca[NUMERO_FLUSSI * MAX_COCCODRILLI]; // cricca di coccodrilli
     Thread granate[N_GRANATE];
     Thread astuccio[N_PROIETTILI]; // astuccio dei proiettili
+    Thread temp;
     _Bool tane[NUMERO_TANE] = {0}; // essenzialmente se è false la tana è libera
     int vite = MAX_VITE;
-    Punteggio punteggio = inizializzaPunteggio();
-
-    Punteggio punti;
-
-    punti.tempo = 0;
-    punti.proiettili = 0;
-    punti.salti = 0;
-    punti.tane = 0;
-    punti.morte = 0;
+    Punteggio punti = inizializzaPunteggio();
 
     avviaCoccodrilli(fiume, cricca, m);
-
     inizializzaGranate(granate);
-    avviaProiettili(astuccio); // todo cambiare nome funzione
+    inizializzaProiettili(astuccio);    
 
     time_t start = time(NULL);
     _Bool reset = false; // la uso per capire se devo resettare posizione rana e tempo
@@ -42,8 +35,9 @@ void *controllo(void *mutex)
         reset = false;
         // gestione stampa
         werase(wgioco);
-        werase(debug);
+        handleTempo(wtempo, start);
         stampaFiume(wgioco);
+        handleHud(whud, vite, punti);
         stampaTane(wgioco, tane);
         stampaMarciapiede(wgioco);
         stampaSponda(wgioco);
@@ -52,7 +46,6 @@ void *controllo(void *mutex)
 
         for (int i = 0; i < N_GRANATE; i++)
         {
-            mvwprintw(debug, 5 + i, 4, " %d", granate[i].tid);
             if (granate[i].tid != -1)
             {
                 stampaGranata(granate[i].item, wgioco);
@@ -64,20 +57,10 @@ void *controllo(void *mutex)
             if (astuccio[i].tid != -1)
             {
                 stampaProiettile(astuccio[i].item, wgioco);
-                mvwprintw(debug, i, 20, " %d %d %d", astuccio[i].item.y, astuccio[i].item.x, astuccio[i].tid);
             }
         }
 
-        // print buffer
-        for (int i = 0; i < DIM_BUFFER; i++)
-        {
-            mvwprintw(debug, 2, 1 + i, "%c", b.buffer[i].item.id);
-        }
-
-        // print pos rana
-        mvwprintw(debug, 3, 1, "x: %d y: %d", rana.item.x, rana.item.y);
-        temp = leggi(m); // lettura dal buffer
-        mvwprintw(debug, 1, 1, "%c", temp.item.id);
+        temp = leggi(m); // lettura dal buffer 
 
         switch (temp.item.id)
         {
@@ -95,16 +78,15 @@ void *controllo(void *mutex)
                 rana.item.y = NLINES - ALTEZZA_RANA - 1;
             break;
         case 'g':
-            //? ma se controllassimo se c'è spazio qua invece che creare i thread e poi cancellarli?
-            avviaGranate(rana, mutex);
+            for(int i=0; i < N_GRANATE; i++){
+                if(granate[i].tid == -1){
+                    avviaGranate(rana, mutex);
+                    break;
+                }
+            }
             break;
         case 'o':
-            // flash();
-            mvwprintw(debug, 10, 4, "%d \t%d\t %d", temp.item.x, temp.item.y, temp.tid);
-            // mvwaddch(wgioco, temp.item.y, temp.item.x, temp.item.id); // per il debug
-            // stampare le stampa appena arrivano però credo sia un problema con la memorizzazione nell'array
             _Bool trovate = false;
-
             for (int i = 0; i < N_GRANATE; i++)
             {
                 if (granate[i].tid == temp.tid)
@@ -115,10 +97,9 @@ void *controllo(void *mutex)
                     // Check se è fuori dai bordi
                     if (granate[i].item.x < 0 || granate[i].item.x > NCOLS)
                     {
-                        if (granate[i].tid > 0)
-                        {
-                            // flash();
-                            pthread_cancel(granate[i].tid) == 0;
+                        if (granate[i].tid != -1)
+                        {  // se è fuori dai bordi cancello il thread
+                            pthread_cancel(granate[i].tid);
                             pthread_join(granate[i].tid, NULL);
                             granate[i].tid = -1;
                         }
@@ -132,7 +113,7 @@ void *controllo(void *mutex)
                 for (int i = 0; i < N_GRANATE; i++)
                 {
                     if (granate[i].tid == -1)
-                    { //! ho cambiato da <0 a ==-1 e ora sembra che vada???
+                    { 
                         granate[i] = temp;
                         trovate = true;
                         break;
@@ -158,7 +139,6 @@ void *controllo(void *mutex)
             }
             break;
         case '-':
-            mvwprintw(debug, 3, 1, " %d %d", temp.item.x, temp.tid);
             _Bool trovati = false;
 
             for (int i = 0; i < N_PROIETTILI; i++)
@@ -173,7 +153,6 @@ void *controllo(void *mutex)
                     {
                         if (astuccio[i].tid != -1)
                         {
-                            // flash();
                             pthread_cancel(astuccio[i].tid);
                             pthread_join(astuccio[i].tid, NULL);
                             astuccio[i].tid = -1;
@@ -205,7 +184,7 @@ void *controllo(void *mutex)
             break;
         }
 
-        reset = detectCollisione(&rana, cricca, astuccio, granate, tane, temp, wgioco, debug, &vite, time(NULL) - start, &punti);
+        reset = detectCollisione(&rana, cricca, astuccio, granate, tane, temp, wgioco, &vite, time(NULL) - start, &punti);
 
         if (reset)
         { // resetto la posizione della rana e il tempo
@@ -230,7 +209,7 @@ void *controllo(void *mutex)
             }
             usleep(DELAY_CONTROLLO);
             // inizializza di nuovo tutto
-            avviaProiettili(astuccio);
+            inizializzaProiettili(astuccio);
             inizializzaGranate(granate);
         }
 
@@ -239,15 +218,13 @@ void *controllo(void *mutex)
             break; // se vinci esci dal loop principale
         }
 
-        wnoutrefresh(debug);
         wnoutrefresh(wgioco);
         doupdate();
         usleep(DELAY_CONTROLLO);
     }
     // fuori dal loop principale
-    cleanup(rana, cricca, astuccio, granate, wgioco, whud, debug, wtempo);
+    cleanup(rana, cricca, astuccio, granate, wgioco, whud, wtempo);
     menuFinale(punti, vite);
-    flash();
     pthread_exit(NULL);
 }
 
@@ -305,7 +282,7 @@ void handleMorteRana(Thread *rana, int *vite, Punteggio *punti, WINDOW *wgioco)
 }
 
 // funzione principale per le collisioni
-_Bool detectCollisione(Thread *rana, Thread *cricca, Thread *astuccio, Thread *granate, _Bool *tane, Thread last, WINDOW *wgioco, WINDOW *debug, int *vite, int secondi, Punteggio *punti)
+_Bool detectCollisione(Thread *rana, Thread *cricca, Thread *astuccio, Thread *granate, _Bool *tane, Thread last, WINDOW *wgioco, int *vite, int secondi, Punteggio *punti)
 {
     checkPuntiSalto(punti, last);
     // crea la box rana
@@ -452,21 +429,12 @@ void handleHud(WINDOW *whud, int vite, Punteggio punti)
 {
     werase(whud);
     box(whud, ACS_VLINE, ACS_HLINE);
-
     for (int i = 0; i < vite; i++)
     { // per ogni vita stampa una rana
         stampaRana((Oggetto){' ', 1, i * LARGHEZZA_RANA + 1, 0}, whud);
     }
-
-    int totale = 0;
-    totale += punti.tane;
-    totale += punti.proiettili;
-    totale += punti.salti;
-    totale += punti.tempo;
-    totale -= punti.morte;
-    if (totale < 0)
-        totale = 0;
-    mvwprintw(whud, 1, 30, "punteggio: %d", totale);
+    mvwprintw(whud, 1, 30, "punteggio: %d", totalePunti(punti));
+    wnoutrefresh(whud);
 }
 
 void handleTempo(WINDOW *wtempo, int start)
@@ -481,11 +449,11 @@ void handleTempo(WINDOW *wtempo, int start)
         short color_pair;
         // todo qua i codici del color pair sono messi a caso era solo per fare una prova (che funziona) DA CAMBIARE
         if (ratio > 0.7)
-            color_pair = 1; // verde
+            color_pair = GREEN_TEMPO; // verde
         else if (ratio > 0.3)
-            color_pair = 3; // giallo
+            color_pair = YELLOW_TEMPO; // giallo
         else
-            color_pair = 4; // rosso
+            color_pair = RED_TEMPO; // rosso
         for (int j = 1; j < TCOLS - 1; j++)
         {
             wattron(wtempo, COLOR_PAIR(color_pair));
@@ -493,4 +461,5 @@ void handleTempo(WINDOW *wtempo, int start)
             wattroff(wtempo, COLOR_PAIR(color_pair));
         }
     }
+    wnoutrefresh(wtempo);
 }

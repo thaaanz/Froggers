@@ -21,7 +21,7 @@ pthread_t generaCoccodrillo(Flusso flusso, int offset, pthread_mutex_t * m, Ogge
 void* funzioneCoccodrillo(void* parametri);
 int fdelay(int speed);
 void stampaCoccodrilli(Thread* cricca, WINDOW* wgioco);
-void avviaProiettili(Thread* astuccio);
+void inizializzaProiettili(Thread* astuccio);
 void* funzioneProiettile(void* parametri);
 void stampaProiettile(Oggetto proiettile, WINDOW* wgioco);
 
