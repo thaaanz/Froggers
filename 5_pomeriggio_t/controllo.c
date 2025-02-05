@@ -107,8 +107,12 @@ void *controllo(void *semafori)
                         {
                             if (granate[i].tid != -1)
                             {  // se è fuori dai bordi cancello il thread
-                                pthread_cancel(granate[i].tid);
-                                pthread_join(granate[i].tid, NULL);
+                                
+                                if (pthread_kill(granate[i].tid, 0) == 0) {
+                                    if (pthread_cancel(granate[i].tid) == 0) {
+                                        pthread_join(granate[i].tid, NULL);
+                                    }
+                                }
                                 granate[i].tid = -1;
                             }
                         }
@@ -161,9 +165,12 @@ void *controllo(void *semafori)
                         {
                             if (astuccio[i].tid != -1)
                             {
-                                pthread_cancel(astuccio[i].tid);
-                                pthread_join(astuccio[i].tid, NULL);
-                                astuccio[i].tid = -1;
+                                if (pthread_kill(astuccio[i].tid, 0) == 0) {
+                                    if (pthread_cancel(astuccio[i].tid) == 0) {
+                                        pthread_join(astuccio[i].tid, NULL);
+                                    }
+                                }
+                            astuccio[i].tid = -1;
                             }
                         }
                         break;
@@ -201,18 +208,23 @@ void *controllo(void *semafori)
                 start = time(NULL);
                 for (int i = 0; i < N_PROIETTILI; i++)
                 {
-                    if (astuccio[i].tid != -1)
-                    {
-                        pthread_cancel(astuccio[i].tid);
-                        pthread_join(astuccio[i].tid, NULL);
+                    if(astuccio[i].tid != -1){
+                        if (pthread_kill(astuccio[i].tid, 0) == 0) {
+                            if (pthread_cancel(astuccio[i].tid) == 0) {
+                                pthread_join(astuccio[i].tid, NULL);
+                            }
+                        }
                     }
                 }
                 for (int i = 0; i < N_GRANATE; i++)
                 {
                     if (granate[i].tid != -1)
                     {
-                        pthread_cancel(granate[i].tid);
-                        pthread_join(granate[i].tid, NULL);
+                        if (pthread_kill(granate[i].tid, 0) == 0) {
+                            if (pthread_cancel(granate[i].tid) == 0) {
+                                pthread_join(granate[i].tid, NULL);
+                            }
+                        }
                     }
                 }
                 usleep(DELAY_CONTROLLO);
