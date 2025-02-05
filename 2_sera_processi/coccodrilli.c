@@ -161,9 +161,12 @@ pid_t funzioneProiettile(int* pipe_fd, Processo coccodrillo) //* meglio passare 
 
 void stampaProiettile(Oggetto proiettile, WINDOW* wgioco)
 {
-    wattron(wgioco, COLOR_PAIR(COLORI_PROIETTILI));
-    wattron(wgioco, A_BOLD); 
-    mvwaddch(wgioco, proiettile.y, proiettile.x, proiettile.id);
-    wattroff(wgioco, A_BOLD);
+    wattron(wgioco, COLOR_PAIR(COLORI_PROIETTILI)); 
+    if(proiettile.dir==DIR_RIGHT) {
+        mvwprintw(wgioco, proiettile.y, proiettile.x, "%lc", L'⁍');
+        }
+    else {
+        mvwprintw(wgioco, proiettile.y, proiettile.x, "%lc", L'⁌');
+        }
     wattroff(wgioco, COLOR_PAIR(COLORI_PROIETTILI));
 }

@@ -35,7 +35,7 @@ void funzioneRana(int* pipe_fd, int* pipe_inversa)
     Processo rana;
     int c;
 
-    rana.pid=getpid(); //!è davvero necessario?
+    rana.pid=getpid(); 
     while(true)
     {
         rana.item.id='r'; rana.item.y=0; rana.item.x=0, rana.item.dir=NULL; // scrive sulla pipe le coordinate relative
@@ -138,11 +138,12 @@ void granata(int direzione, int* pipe_fd, Processo* rana)
 
 void stampaGranata(Oggetto g, WINDOW* w)
 {
-    wattron(w, COLOR_PAIR(COLORI_PROIETTILI));
+    
+    wattron(w, COLOR_PAIR(COLORI_GRANATA));
     wattron(w, A_BOLD); 
 
     mvwaddch(w, g.y, g.x, g.id);
-    
-    wattroff(w, COLOR_PAIR(COLORI_PROIETTILI));
+
+    wattroff(w, COLOR_PAIR(COLORI_GRANATA));
     wattroff(w, A_BOLD); 
 }

@@ -12,12 +12,7 @@ int  main()
 
     
     do{
-        int pipe_fd[2];
-        int pipe_inversa[2];
-        avviaPipe(pipe_fd);
-        avviaPipe(pipe_inversa);
-
-        controllo(pipe_fd, pipe_inversa);
+        controllo();
     }while(restart());
 
 

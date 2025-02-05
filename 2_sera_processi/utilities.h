@@ -3,7 +3,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <curses.h>
+#include <ncursesw/curses.h>
+#include <locale.h>
 #include <time.h>
 #include <sys/types.h>
 #include <sys/wait.h> 
@@ -44,10 +45,12 @@
 #define COLORI_FIUME 6
 #define COLORI_MARCIAPIEDE 7
 #define COLORI_SPONDA 8
-#define COLORI_PROIETTILI 9
-#define GREEN_TEMPO 10
-#define YELLOW_TEMPO 11
-#define RED_TEMPO 12
+#define COLORI_GRANATA 9
+#define COLORI_PROIETTILI 10
+#define COLORI_MINE 11
+#define GREEN_TEMPO 12
+#define YELLOW_TEMPO 13
+#define RED_TEMPO 14
 #define COLOR_DARK_GREEN 8  // Usa un numero > 7 per colori custom
 #define COLOR_GRAY 9
 #define COLOR_DARK_BLUE 10
@@ -63,6 +66,9 @@
 #define N_GRANATE 20
 #define MAX_TEMPO 60
 #define N_PROIETTILI 10//* max coccodrilli * numero flussi
+#define N_MINE 3
+#define DIST_MAX_MINE 30
+#define DIST_MIN_MINE 14
 
 
 

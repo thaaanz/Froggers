@@ -12,11 +12,13 @@ void avviaPipe(int* pipe_fd)
 
 void avviancurses()
 {
+    setlocale(LC_ALL, "");
     initscr();
     noecho();
     cbreak();
     curs_set(0);
     keypad(stdscr, TRUE);
+    srand(time(NULL));
     start_color(); 
 
     //inizializzazione dei colori
@@ -32,18 +34,18 @@ void avviancurses()
     init_pair(COLORI_MARCIAPIEDE, COLOR_GRAY, COLOR_WHITE);
     init_color(COLOR_BROWN, 600, 300, 0);
     init_pair(COLORI_SPONDA, COLOR_BROWN, COLOR_BROWN);
+    init_pair(COLORI_GRANATA, COLOR_BLACK, COLOR_RED);
     init_pair(COLORI_PROIETTILI, COLOR_BLACK, COLOR_RED);
     init_pair(GREEN_TEMPO, COLOR_GREEN, COLOR_GREEN);
     init_pair(YELLOW_TEMPO, COLOR_YELLOW, COLOR_YELLOW);
     init_pair(RED_TEMPO, COLOR_RED, COLOR_RED);
+    init_pair(COLORI_MINE, COLOR_BLACK, COLOR_RED);
 
 }
 
 Flusso* avviaFlussi()
 {
     static Flusso fiume[NUMERO_FLUSSI]; // static in modo che non venga distrutto al termine della funzione
-    
-    srand(time(NULL));
 
     int direzione;
     do{
@@ -110,3 +112,15 @@ Punteggio inizializzaPunteggio(){
     return punti;
 }
 
+Oggetto* inizializzaMine(Oggetto* mine){
+    int starting_x=rand() % (NCOLS - DIST_MAX_MINE * N_MINE);
+    for(int i=0 ; i < N_MINE; i++)
+    {
+        mine[i].x=starting_x;
+        starting_x += DIST_MIN_MINE + rand()%DIST_MAX_MINE;
+        mine[i].y=ALTEZZA_TANE + ALTEZZA_RANA+1;
+        mine[i].id='m';
+        mine[i].dir=0;
+    }
+    return mine;
+}

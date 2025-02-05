@@ -18,13 +18,13 @@ typedef struct {
     int height;
 } BoundingBox;
 
-void controllo(int* pipe_fd, int* pipe_inversa);
+void controllo();
 BoundingBox createBoundingBox(int x, int y, int larghezza, int altezza);
 _Bool checksovrapposizione(BoundingBox a, BoundingBox b);
 int checkTaneCollision(int x, int y);
 _Bool checkWin(_Bool* tane);
 void handleMorteRana(Processo* rana, int* vite, Punteggio* punti, WINDOW* wgioco);
-_Bool detectCollisione(Processo* rana, Processo* cricca, Processo* astuccio, Processo* granate, _Bool* tane, Processo last, WINDOW* wgioco, int* vite, int secondi, Punteggio* punti);
+_Bool detectCollisione(Processo* rana, Processo* cricca, Processo* astuccio, Processo* granate, Oggetto* mine, _Bool* tane, Processo last, WINDOW* wgioco, int* vite, int secondi, Punteggio* punti);
 void handleHud(WINDOW* whud, int vite, Punteggio punti);
 
 #endif

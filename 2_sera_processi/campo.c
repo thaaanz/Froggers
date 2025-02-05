@@ -65,3 +65,13 @@ void stampaFiume ( WINDOW* window){
     }
     wattroff(window, COLOR_PAIR(COLORI_FIUME));
 }
+
+void stampaMine(Oggetto* mine, WINDOW* window){
+    wattron(window, COLOR_PAIR(COLORI_SPONDA));
+    for(int i = 0; i < N_MINE; i++){
+        if(mine[i].id == 'm'){
+            mvwprintw(window, mine[i].y, mine[i].x, "%lc", L'🧨');
+        }
+    }
+    wattroff(window, COLOR_PAIR(COLORI_SPONDA));
+}

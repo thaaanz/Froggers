@@ -11,4 +11,5 @@ void avviancurses();
 void cleanup(Processo rana, Processo* cricca, Processo* astuccio, Processo* granate);
 Flusso* avviaFlussi();
 Punteggio inizializzaPunteggio();
+Oggetto* inizializzaMine(Oggetto* mine);
 #endif

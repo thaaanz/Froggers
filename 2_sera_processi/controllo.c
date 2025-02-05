@@ -1,6 +1,6 @@
 #include "controllo.h"
 
-void controllo(int* pipe_fd, int* pipe_inversa)
+void controllo()
 {
     WINDOW* wgioco=newwin(NLINES, NCOLS, HUDLINES, 0); //finestra di gioco con coccodrilli e rana
     WINDOW* whud=newwin(HUDLINES, NCOLS, 0, 0); //finestra che segna le vite e il tempo
@@ -9,218 +9,231 @@ void controllo(int* pipe_fd, int* pipe_inversa)
     wbkgd(whud, COLOR_PAIR(COLORI_HUD));
     wbkgd(wtempo, COLOR_PAIR(COLORI_TEMPO));
 
-    //inizializzazioni
-    Flusso* fiume=avviaFlussi();
-    Processo rana=avviaRana(pipe_fd, pipe_inversa);
-    Processo cricca[NUMERO_FLUSSI*MAX_COCCODRILLI];//cricca di coccodrilli
-    Processo granate[N_GRANATE];
-    Processo astuccio[N_PROIETTILI]; //astuccio dei proiettili
-    Processo temp;
     _Bool tane[NUMERO_TANE]={0}; //essenzialmente se è false la tana è libera 
     int vite=MAX_VITE;
     Punteggio punteggio=inizializzaPunteggio();
 
-    inizializzaProiettili(astuccio); // inizializza i pid 
-    inizializzaGranate(granate); //inizializza l'array
-    avviaCoccodrilli(pipe_fd, fiume, cricca); //avvia i processi coccodrillo
+    while(vite >0){
 
-    close(pipe_fd[1]);
-    close(pipe_inversa[0]);
+        int pipe_fd[2];
+        int pipe_inversa[2];
+        avviaPipe(pipe_fd);
+        avviaPipe(pipe_inversa);
 
-    
-    time_t start=time(NULL);
-    _Bool reset=false; // la uso per capire se devo resettare posizione rana e tempo
-    while(vite>0)
-    {
-        reset=false;
-        //todo creare una pipesuono e un processo che gestisca la musica e i suoni di gioco(in quell trovato su github fanno così)
-        //gestione stampa
-        werase(wgioco);
-        werase(whud);
-        werase(wtempo);
-        handleHud(whud, vite, punteggio);
-        handleTempo(wtempo, start);
-        mvwprintw(whud, 1, 20, "vite: %d", vite);
-        stampaFiume(wgioco);
-        stampaTane(wgioco, tane);
-        stampaMarciapiede(wgioco);
-        stampaSponda(wgioco);
-        stampaCoccodrilli(cricca, wgioco);
-        stampaRana(rana.item, wgioco);
+        //inizializzazioni
+        Flusso* fiume=avviaFlussi();
+        Processo rana=avviaRana(pipe_fd, pipe_inversa);
+        Processo cricca[NUMERO_FLUSSI*MAX_COCCODRILLI];//cricca di coccodrilli
+        Processo granate[N_GRANATE];
+        Processo astuccio[N_PROIETTILI]; //astuccio dei proiettili
+        Processo temp;
 
-        for(int i=0; i<N_GRANATE; i++)
-        {
-            if(granate[i].pid>0)
-            {
-                stampaGranata(granate[i].item, wgioco);
-            }
-        }
+        Oggetto mine[N_MINE];
+        inizializzaMine(mine);
 
-        for(int i=0; i<N_PROIETTILI; i++)
-        {
-            if(astuccio[i].pid!=-1)
-            {
-                stampaProiettile(astuccio[i].item, wgioco);
-            }
-        }
+        inizializzaProiettili(astuccio); // inizializza i pid 
+        inizializzaGranate(granate); //inizializza l'array
+        avviaCoccodrilli(pipe_fd, fiume, cricca); //avvia i processi coccodrillo
+
+        close(pipe_fd[1]);
+        close(pipe_inversa[0]);
+
         
-        //aggiornamento varie finestre
-        wnoutrefresh(wgioco);
-        wnoutrefresh(whud);
-        wnoutrefresh(wtempo);
-        doupdate();
-
-        //lettura dalla pipe 
-        read(pipe_fd[0], &temp, sizeof(Processo));
-
-        switch(temp.item.id)
+        time_t start=time(NULL);
+        _Bool reset=false; // la uso per capire se devo resettare posizione rana e tempo
+        while( !reset ) // fino a che non perso una vita/chiudo una tana
         {
-            case 'r': // caso rana
-                rana.item.x+=temp.item.x;
-                rana.item.y+=temp.item.y;
-                if(rana.item.x<=0) rana.item.x=1;
-                if(rana.item.y<=0) rana.item.y=1;
-                if(rana.item.x>=NCOLS-LARGHEZZA_RANA) rana.item.x=NCOLS-LARGHEZZA_RANA-1;
-                if(rana.item.y>=NLINES-ALTEZZA_RANA) rana.item.y=NLINES-ALTEZZA_RANA-1;
-                break;
-            case 'q':
-                sleep(10); break; //! questo messo tipo pausa per il debug poi lo cambiamo
-            case 'o': // caso granata
-                _Bool trovate = false;
-                if(temp.item.x < 0 ||  temp.item.x > NCOLS) // se è fuori dai bordi
+            reset=false;
+            //gestione stampa
+            werase(wgioco);
+            werase(whud);
+            werase(wtempo);
+            handleHud(whud, vite, punteggio);
+            handleTempo(wtempo, start);
+            stampaFiume(wgioco);
+            stampaTane(wgioco, tane);
+            stampaMarciapiede(wgioco);
+            stampaSponda(wgioco);
+            stampaCoccodrilli(cricca, wgioco);
+            stampaMine(mine, wgioco);
+
+            for(int i=0; i<N_GRANATE; i++)
+            {
+                if(granate[i].pid>0)
                 {
-                    for(int i = 0; i < N_GRANATE; i++)
+                    stampaGranata(granate[i].item, wgioco);
+                }
+            }
+
+            for(int i=0; i<N_PROIETTILI; i++)
+            {
+                if(astuccio[i].pid!=-1)
+                {
+                    stampaProiettile(astuccio[i].item, wgioco);
+                }
+            }
+            stampaRana(rana.item, wgioco);
+            
+            //aggiornamento varie finestre
+            wnoutrefresh(wgioco);
+            wnoutrefresh(whud);
+            wnoutrefresh(wtempo);
+            doupdate();
+
+            //lettura dalla pipe 
+            read(pipe_fd[0], &temp, sizeof(Processo));
+
+            switch(temp.item.id)
+            {
+                case 'r': // caso rana
+                    rana.item.x+=temp.item.x;
+                    rana.item.y+=temp.item.y;
+                    if(rana.item.x<=0) rana.item.x=1;
+                    if(rana.item.y<=0) rana.item.y=1;
+                    if(rana.item.x>=NCOLS-LARGHEZZA_RANA) rana.item.x=NCOLS-LARGHEZZA_RANA-1;
+                    if(rana.item.y>=NLINES-ALTEZZA_RANA) rana.item.y=NLINES-ALTEZZA_RANA-1;
+                    break;
+                case 'q':
+                    sleep(10); break; //! questo messo tipo pausa per il debug poi lo cambiamo
+                case 'o': // caso granata
+                    _Bool trovate = false;
+                    if(temp.item.x < 0 ||  temp.item.x > NCOLS) // se è fuori dai bordi
                     {
-                        if(granate[i].pid==temp.pid) // trovo dove è memorizzata nell'array
+                        for(int i = 0; i < N_GRANATE; i++)
                         {
-                            if(temp.pid>1) kill(granate[i].pid, 9); //ammazzo il processo
-                            granate[i].pid=-1; //rendo lo slot dell'array nuovamente disponibile
-                            trovate=true;
-                            break;
+                            if(granate[i].pid==temp.pid) // trovo dove è memorizzata nell'array
+                            {
+                                if(temp.pid>1) kill(granate[i].pid, 9); //ammazzo il processo
+                                granate[i].pid=-1; //rendo lo slot dell'array nuovamente disponibile
+                                trovate=true;
+                                break;
+                            }
                         }
                     }
-                }
-                if(trovate) break; //il processo è terminato, non bisogna fare altro
-                for(int i = 0; i < N_GRANATE; i++) //aggiorno la sua posizione se è già stata memorizzata nell'array
-                {
-                    if(granate[i].pid == temp.pid) {
-                        granate[i] = temp;
-                        trovate = true;
-                        break;
-                    }
-                }
-                if(!trovate) //se non è ancora stata memorizzata cerco uno slot libero
-                {
-                    for(int i = 0; i < N_GRANATE; i++) 
+                    if(trovate) break; //il processo è terminato, non bisogna fare altro
+                    for(int i = 0; i < N_GRANATE; i++) //aggiorno la sua posizione se è già stata memorizzata nell'array
                     {
-                        if(granate[i].pid<0) {  // slot libero
+                        if(granate[i].pid == temp.pid) {
                             granate[i] = temp;
-                            trovate=true;
+                            trovate = true;
                             break;
                         }
                     }
-                }
-                if(!trovate)//se non trovo uno slot libero termino il processo
-                {
-                    if(temp.pid>1) kill(temp.pid, 9);
-                }
-                break;
-            case 'g': // scrivo nella pipe inversa le coordinate della rana in modo che queste vengano passate alle granate
-                for(int i=0; i<N_GRANATE; i++)
-                {
-                    if(granate[i].pid == -1)
+                    if(!trovate) //se non è ancora stata memorizzata cerco uno slot libero
                     {
-                        write(pipe_inversa[1], &rana, sizeof(Processo));
-                        break;
-                    }
-                }
-                break;
-            case 'c': // caso coccodrillo
-                for(int i=0; i<NUMERO_FLUSSI*MAX_COCCODRILLI; i++)
-                {
-                    if(cricca[i].pid==temp.pid)
-                    {
-                        cricca[i]=temp;
-                    }
-                }
-                break;
-            case '-': // caso proiettile
-                _Bool trovato = false;
-                if(temp.item.x < 0 ||  temp.item.x > NCOLS) // se è fuori dai bordi
-                {
-                    for(int i = 0; i < N_PROIETTILI; i++)
-                    {
-                        if(astuccio[i].pid==temp.pid) // trovo dove è memorizzato nell'array
+                        for(int i = 0; i < N_GRANATE; i++) 
                         {
-                            if(astuccio[i].pid>1) kill(astuccio[i].pid, 9); //ammazzo il processo
-                            astuccio[i].pid=-1; //rendo lo slot dell'array nuovamente disponibile
-                            trovato=true;
-                            break;
+                            if(granate[i].pid<0) {  // slot libero
+                                granate[i] = temp;
+                                trovate=true;
+                                break;
+                            }
                         }
                     }
-                }
-                if(trovato) break;//il processo è terminato, non bisogna fare altro
-
-                for(int i = 0; i < N_PROIETTILI; i++) //aggiorno la sua posizione se è già stata memorizzata nell'array
-                {
-                    if(astuccio[i].pid == temp.pid) {
-                        astuccio[i] = temp;
-                        trovato = true;
-                        break;
-                    }
-                }
-                
-                if(!trovato) //se non è ancora stata memorizzata cerco uno slot libero
-                {
-                    for(int i = 0; i < N_PROIETTILI; i++) 
+                    if(!trovate)//se non trovo uno slot libero termino il processo
                     {
-                        if(astuccio[i].pid<0) {  // slot libero
-                            astuccio[i] = temp;
-                            trovato=true;
+                        if(temp.pid>1) kill(temp.pid, 9);
+                    }
+                    break;
+                case 'g': // scrivo nella pipe inversa le coordinate della rana in modo che queste vengano passate alle granate
+                    for(int i=0; i<N_GRANATE; i++)
+                    {
+                        if(granate[i].pid == -1)
+                        {
+                            write(pipe_inversa[1], &rana, sizeof(Processo));
                             break;
                         }
                     }
-                }
-                if(!trovato) //se non trovo uno slot libero termino il processo
-                {
-                    if(temp.pid>1) kill(temp.pid, 9);
-                }
-                break;
-        }
+                    break;
+                case 'c': // caso coccodrillo
+                    for(int i=0; i<NUMERO_FLUSSI*MAX_COCCODRILLI; i++)
+                    {
+                        if(cricca[i].pid==temp.pid)
+                        {
+                            cricca[i]=temp;
+                        }
+                    }
+                    break;
+                case '-': // caso proiettile
+                    _Bool trovato = false;
+                    if(temp.item.x < 0 ||  temp.item.x > NCOLS) // se è fuori dai bordi
+                    {
+                        for(int i = 0; i < N_PROIETTILI; i++)
+                        {
+                            if(astuccio[i].pid==temp.pid) // trovo dove è memorizzato nell'array
+                            {
+                                if(astuccio[i].pid>1) kill(astuccio[i].pid, 9); //ammazzo il processo
+                                astuccio[i].pid=-1; //rendo lo slot dell'array nuovamente disponibile
+                                trovato=true;
+                                break;
+                            }
+                        }
+                    }
+                    if(trovato) break;//il processo è terminato, non bisogna fare altro
 
-        reset=detectCollisione(&rana, cricca, astuccio, granate, tane, temp, wgioco, &vite, time(NULL)-start, &punteggio);
-
-        if(reset){ //resetto la posizione della rana e il tempo
-            rana.item.x=NCOLS / 2 - LARGHEZZA_RANA / 2;
-            rana.item.y=NLINES - ALTEZZA_RANA - 1;
-            start=time(NULL);
-            //termino i processi dei proiettili e delle granate
-            for(int i=0; i < N_PROIETTILI; i++){ 
-                if(astuccio[i].pid > 1){
-                    kill(astuccio[i].pid, 9);
-                    waitpid(astuccio[i].pid, NULL, 0);
-                }
+                    for(int i = 0; i < N_PROIETTILI; i++) //aggiorno la sua posizione se è già stata memorizzata nell'array
+                    {
+                        if(astuccio[i].pid == temp.pid) {
+                            astuccio[i] = temp;
+                            trovato = true;
+                            break;
+                        }
+                    }
+                    
+                    if(!trovato) //se non è ancora stata memorizzata cerco uno slot libero
+                    {
+                        for(int i = 0; i < N_PROIETTILI; i++) 
+                        {
+                            if(astuccio[i].pid<0) {  // slot libero
+                                astuccio[i] = temp;
+                                trovato=true;
+                                break;
+                            }
+                        }
+                    }
+                    if(!trovato) //se non trovo uno slot libero termino il processo
+                    {
+                        if(temp.pid>1) kill(temp.pid, 9);
+                    }
+                    break;
             }
 
-            for(int i=0; i < N_GRANATE; i++){
-                if(granate[i].pid > 1){
-                    kill(granate[i].pid, 9);
-                    waitpid(granate[i].pid, NULL, 0);
-                }
-            }
-            //inizializza di nuovo tutto 
-            inizializzaProiettili(astuccio); 
-            inizializzaGranate(granate);
-        }
+            reset=detectCollisione(&rana, cricca, astuccio, granate, mine, tane, temp, wgioco, &vite, time(NULL)-start, &punteggio);
 
-        if(checkWin(tane)){
-            break; // se vinci esci dal loop principale
+            if(reset){ //resetto la posizione della rana e il tempo
+                rana.item.x=NCOLS / 2 - LARGHEZZA_RANA / 2;
+                rana.item.y=NLINES - ALTEZZA_RANA - 1;
+                start=time(NULL);
+                //termino i processi dei proiettili e delle granate
+                for(int i=0; i < N_PROIETTILI; i++){ 
+                    if(astuccio[i].pid > 1){
+                        kill(astuccio[i].pid, 9);
+                        waitpid(astuccio[i].pid, NULL, 0);
+                    }
+                }
+
+                for(int i=0; i < N_GRANATE; i++){
+                    if(granate[i].pid > 1){
+                        kill(granate[i].pid, 9);
+                        waitpid(granate[i].pid, NULL, 0);
+                    }
+                }
+                //inizializza di nuovo tutto 
+                inizializzaProiettili(astuccio); 
+                inizializzaGranate(granate);
+                inizializzaMine(mine);
+            }
+
+            if(checkWin(tane)){
+                break; // se vinci esci dal loop principale
+            }
+            usleep(1100);
         }
-        usleep(1100);
+        cleanup(rana, cricca, astuccio, granate);
     }
+    
     //fuori dal loop principale
     menuFinale(punteggio, vite);
-    cleanup(rana, cricca, astuccio, granate);
 }
 
 BoundingBox createBoundingBox(int x, int y, int larghezza, int altezza) {
@@ -234,7 +247,7 @@ BoundingBox createBoundingBox(int x, int y, int larghezza, int altezza) {
 }
 
 _Bool checksovrapposizione(BoundingBox a, BoundingBox b) {
-    return (a.x + a.width <= b.x + b.width &&
+    return (a.x < b.x + b.width &&
             a.x + a.width > b.x &&
             a.y < b.y + b.height &&
             a.y + a.height > b.y);
@@ -270,10 +283,11 @@ void handleMorteRana(Processo* rana, int* vite, Punteggio* punti, WINDOW* wgioco
     }
 
 // funzione principale per le collisioni
-_Bool detectCollisione(Processo* rana, Processo* cricca, Processo* astuccio, Processo* granate, _Bool* tane, Processo last, WINDOW* wgioco, int* vite, int secondi, Punteggio* punti) {
+_Bool detectCollisione(Processo* rana, Processo* cricca, Processo* astuccio, Processo* granate, Oggetto* mine, _Bool* tane, Processo last, WINDOW* wgioco, int* vite, int secondi, Punteggio* punti) {
     checkPuntiSalto(punti, last);
     // crea la box rana
     BoundingBox ranaBox = createBoundingBox(rana->item.x, rana->item.y, LARGHEZZA_RANA,ALTEZZA_RANA);
+
 
     // Check tempo
     if(secondi > MAX_TEMPO) {
@@ -307,10 +321,17 @@ _Bool detectCollisione(Processo* rana, Processo* cricca, Processo* astuccio, Pro
         }
     }
 
-
     // check sponda
     if(rana->item.y > ALTEZZA_TANE && 
        rana->item.y < ALTEZZA_TANE + ALTEZZA_SPONDA) {
+        //check rana e mine
+        for(int i=0; i < N_MINE; i++){
+            BoundingBox mineBox = {mine[i].x, mine[i].y, 1, 1};
+            if(checksovrapposizione(mineBox, ranaBox)){
+                handleMorteRana(rana, vite, punti, wgioco);
+                return true;
+            }
+        }
         return false;  //safe 
     }
 
@@ -347,8 +368,6 @@ _Bool detectCollisione(Processo* rana, Processo* cricca, Processo* astuccio, Pro
         handleMorteRana(rana, vite,punti, wgioco);
         return true;
     }
-
-
     
     //check rana e proiettile
     for(int i=0; i < N_PROIETTILI; i++){
@@ -388,6 +407,7 @@ _Bool detectCollisione(Processo* rana, Processo* cricca, Processo* astuccio, Pro
         }
         
     }
+
     return false;
 }
 
@@ -409,7 +429,6 @@ void handleTempo(WINDOW* wtempo, int start){
     int limit= ratio * (NLINES-1); //  indica quante righe occupo
     for(int i=limit; i > 0 ; i--){
         short color_pair;
-        //todo qua i codici del color pair sono messi a caso era solo per fare una prova (che funziona) DA CAMBIARE 
         if(ratio > 0.7) color_pair = GREEN_TEMPO;        // verde
         else if(ratio > 0.3) color_pair = YELLOW_TEMPO;    // giallo
         else color_pair = RED_TEMPO;                    // rosso

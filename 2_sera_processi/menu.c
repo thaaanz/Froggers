@@ -176,27 +176,32 @@ void menuFinale(Punteggio punti, int vite){
 
     sleep(3);
 
-    //riepilogo punti, premi un tasto qualsiasi per andare avanti
+    //riepilogo punti
     wclear(wmenu);
     box(wmenu, '#', '#');
     mvwprintw(wmenu, 3, 4, "Hai totalizzato i seguenti punti: %d", totalePunti(punti)); 
     wrefresh(wmenu);
-    getch();
+    usleep(350000);
     mvwprintw(wmenu, 5, 4, "Chiusura tane: %d", punti.tane);
     wrefresh(wmenu);
-    getch();
+    usleep(350000);
     mvwprintw(wmenu, 7, 4, "Salti: %d", punti.tane);
     wrefresh(wmenu);
-    getch();
+    usleep(350000);
     mvwprintw(wmenu, 9, 4, "Esplosione dei proiettili: %d", punti.proiettili);
     wrefresh(wmenu);
-    getch();
+    usleep(350000);
     mvwprintw(wmenu, 11, 4, "Scorrere del tempo: %d", punti.tempo);
     wrefresh(wmenu);
-    getch();
+    usleep(350000);
     mvwprintw(wmenu, 13, 4, "Morti: -%d", punti.morte);
     wrefresh(wmenu);
-    getch();
+    usleep(350000);
+    wattron(wmenu, COLOR_PAIR(COLORI_HUD));
+    mvwprintw(wmenu, 15, 4, "Premi un tasto per continuare");
+    wattroff(wmenu, COLOR_PAIR(COLORI_HUD));
+    wrefresh(wmenu);
+    wgetch(wmenu);
 }
 
 void stampaWin(WINDOW* w){

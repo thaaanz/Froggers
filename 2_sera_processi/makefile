@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -c -Wall -g
-LDFLAGS = -lncurses
+LDFLAGS = -lncursesw
 OBJS =rana.o main.o controllo.o avvia.o coccodrilli.o campo.o punteggio.o menu.o 
 
 a.out: $(OBJS)
