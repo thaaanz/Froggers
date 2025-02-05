@@ -15,223 +15,228 @@ void *controllo(void *semafori)
     GameAudio audio;
     inizializzaAudio(&audio);
     riproduciMusica(&audio);
-
-    // inizializzazioni
-    Flusso fiume[NUMERO_FLUSSI];
-    avviaFlussi(fiume);
-    Thread rana = avviaRana(s);
-    Thread cricca[NUMERO_FLUSSI * MAX_COCCODRILLI]; // cricca di coccodrilli
-    Thread granate[N_GRANATE];
-    Thread astuccio[N_PROIETTILI]; // astuccio dei proiettili
-    Thread temp;
     _Bool tane[NUMERO_TANE] = {0}; // essenzialmente se è false la tana è libera
     int vite = MAX_VITE;
     Punteggio punti = inizializzaPunteggio();
 
-    avviaCoccodrilli(fiume, cricca, s);
-    inizializzaGranate(granate);
-    inizializzaProiettili(astuccio);    
+    while(vite > 0){
+        // inizializzazioni
+        Flusso fiume[NUMERO_FLUSSI];
+        avviaFlussi(fiume);
+        Thread rana = avviaRana(s);
+        Thread cricca[NUMERO_FLUSSI * MAX_COCCODRILLI]; // cricca di coccodrilli
+        Thread granate[N_GRANATE];
+        Thread astuccio[N_PROIETTILI]; // astuccio dei proiettili
+        Thread temp;
 
-    time_t start = time(NULL);
-    _Bool reset = false; // la uso per capire se devo resettare posizione rana e tempo
+        avviaCoccodrilli(fiume, cricca, s);
+        inizializzaGranate(granate);
+        inizializzaProiettili(astuccio);    
 
-    while (vite > 0)
-    {
-        reset = false;
-        // gestione stampa
-        werase(wgioco);
-        handleTempo(wtempo, start);
-        stampaFiume(wgioco);
-        handleHud(whud, vite, punti);
-        stampaTane(wgioco, tane);
-        stampaMarciapiede(wgioco);
-        stampaSponda(wgioco);
-        stampaCoccodrilli(cricca, wgioco);
-        stampaRana(rana.item, wgioco);
+        time_t start = time(NULL);
+        _Bool reset = false; // la uso per capire se devo resettare posizione rana e tempo
 
-        for (int i = 0; i < N_GRANATE; i++)
+        while (!reset)
         {
-            if (granate[i].tid != -1)
-            {
-                stampaGranata(granate[i].item, wgioco);
-            }
-        }
+            reset = false;
+            // gestione stampa
+            werase(wgioco);
+            handleTempo(wtempo, start);
+            stampaFiume(wgioco);
+            handleHud(whud, vite, punti);
+            stampaTane(wgioco, tane);
+            stampaMarciapiede(wgioco);
+            stampaSponda(wgioco);
+            stampaCoccodrilli(cricca, wgioco);
+            stampaRana(rana.item, wgioco);
 
-        for (int i = 0; i < N_PROIETTILI; i++)
-        {
-            if (astuccio[i].tid != -1)
-            {
-                stampaProiettile(astuccio[i].item, wgioco);
-            }
-        }
-
-        temp = leggi(s); // lettura dal buffer 
-
-        switch (temp.item.id)
-        {
-        case 'r':
-            riproduciSuono(audio.salto_rana);
-            rana.tid=temp.tid;
-            rana.item.x += temp.item.x;
-            rana.item.y += temp.item.y;
-            if (rana.item.x <= 0)
-                rana.item.x = 1;
-            if (rana.item.y <= 0)
-                rana.item.y = 1;
-            if (rana.item.x >= NCOLS - LARGHEZZA_RANA)
-                rana.item.x = NCOLS - LARGHEZZA_RANA - 1;
-            if (rana.item.y >= NLINES - ALTEZZA_RANA)
-                rana.item.y = NLINES - ALTEZZA_RANA - 1;
-            break;
-        case 'g':
-            for(int i=0; i < N_GRANATE; i++){
-                if(granate[i].tid == -1){
-                    avviaGranate(rana, semafori);
-                    break;
-                }
-            }
-            break;
-        case 'o':
-            if(temp.item.dir==0) riproduciSuono(audio.sparo_granata); //per fare il suono solo una volta
-            _Bool trovate = false;
-            for (int i = 0; i < N_GRANATE; i++)
-            {
-                if (granate[i].tid == temp.tid)
-                {
-                    granate[i] = temp;
-                    trovate = true;
-
-                    // Check se è fuori dai bordi
-                    if (granate[i].item.x < 0 || granate[i].item.x > NCOLS)
-                    {
-                        if (granate[i].tid != -1)
-                        {  // se è fuori dai bordi cancello il thread
-                            pthread_cancel(granate[i].tid);
-                            pthread_join(granate[i].tid, NULL);
-                            granate[i].tid = -1;
-                        }
-                    }
-                    break;
-                }
-            }
-
-            if (!trovate)
-            {
-                for (int i = 0; i < N_GRANATE; i++)
-                {
-                    if (granate[i].tid == -1)
-                    { 
-                        granate[i] = temp;
-                        trovate = true;
-                        break;
-                    }
-                }
-            }
-
-            if (!trovate && temp.tid > 1)
-            {
-                pthread_cancel(temp.tid);
-                pthread_join(temp.tid, NULL);
-            }
-
-            break;
-
-        case 'c':                                                     // se legge un coccodrillo
-            for (int i = 0; i < NUMERO_FLUSSI * MAX_COCCODRILLI; i++) // scorre l'array
-            {
-                if (cricca[i].tid == temp.tid) // cerca il coccodrillo corrispondente
-                {
-                    cricca[i] = temp; // aggiorna il coccodrillo
-                }
-            }
-            break;
-        case '-':
-            _Bool trovati = false;
-
-            for (int i = 0; i < N_PROIETTILI; i++)
-            {
-                if (astuccio[i].tid == temp.tid)
-                {
-                    astuccio[i] = temp;
-                    trovati = true;
-
-                    // Check se è fuori dai bordi
-                    if (astuccio[i].item.x < 0 || astuccio[i].item.x > NCOLS)
-                    {
-                        if (astuccio[i].tid != -1)
-                        {
-                            pthread_cancel(astuccio[i].tid);
-                            pthread_join(astuccio[i].tid, NULL);
-                            astuccio[i].tid = -1;
-                        }
-                    }
-                    break;
-                }
-            }
-
-            if (!trovati)
-            {
-                for (int i = 0; i < N_PROIETTILI; i++)
-                {
-                    if (astuccio[i].tid == -1)
-                    { //! ho cambiato da <0 a ==-1 e ora sembra che vada???
-                        astuccio[i] = temp;
-                        trovati = true;
-                        break;
-                    }
-                }
-            }
-
-            if (!trovati && temp.tid != -1)
-            {
-                pthread_cancel(temp.tid);
-                pthread_join(temp.tid, NULL);
-            }
-
-            break;
-        }
-
-        reset = detectCollisione(&rana, cricca, astuccio, granate, tane, temp, wgioco, &vite, time(NULL) - start, &punti, audio);
-
-        if (reset)
-        { // resetto la posizione della rana e il tempo
-            rana.item.x = NCOLS / 2 - LARGHEZZA_RANA / 2;
-            rana.item.y = NLINES - ALTEZZA_RANA - 1;
-            start = time(NULL);
-            for (int i = 0; i < N_PROIETTILI; i++)
-            {
-                if (astuccio[i].tid != -1)
-                {
-                    pthread_cancel(astuccio[i].tid);
-                    pthread_join(astuccio[i].tid, NULL);
-                }
-            }
             for (int i = 0; i < N_GRANATE; i++)
             {
                 if (granate[i].tid != -1)
                 {
-                    pthread_cancel(granate[i].tid);
-                    pthread_join(granate[i].tid, NULL);
+                    stampaGranata(granate[i].item, wgioco);
                 }
             }
-            usleep(DELAY_CONTROLLO);
-            // inizializza di nuovo tutto
-            inizializzaProiettili(astuccio);
-            inizializzaGranate(granate);
-        }
 
+            for (int i = 0; i < N_PROIETTILI; i++)
+            {
+                if (astuccio[i].tid != -1)
+                {
+                    stampaProiettile(astuccio[i].item, wgioco);
+                }
+            }
+
+            temp = leggi(s); // lettura dal buffer 
+
+            switch (temp.item.id)
+            {
+            case 'r':
+                riproduciSuono(audio.salto_rana);
+                rana.tid=temp.tid;
+                rana.item.x += temp.item.x;
+                rana.item.y += temp.item.y;
+                if (rana.item.x <= 0)
+                    rana.item.x = 1;
+                if (rana.item.y <= 0)
+                    rana.item.y = 1;
+                if (rana.item.x >= NCOLS - LARGHEZZA_RANA)
+                    rana.item.x = NCOLS - LARGHEZZA_RANA - 1;
+                if (rana.item.y >= NLINES - ALTEZZA_RANA)
+                    rana.item.y = NLINES - ALTEZZA_RANA - 1;
+                break;
+            case 'g':
+                for(int i=0; i < N_GRANATE; i++){
+                    if(granate[i].tid == -1){
+                        avviaGranate(rana, semafori);
+                        break;
+                    }
+                }
+                break;
+            case 'o':
+                if(temp.item.dir==0) riproduciSuono(audio.sparo_granata); //per fare il suono solo una volta
+                _Bool trovate = false;
+                for (int i = 0; i < N_GRANATE; i++)
+                {
+                    if (granate[i].tid == temp.tid)
+                    {
+                        granate[i] = temp;
+                        trovate = true;
+
+                        // Check se è fuori dai bordi
+                        if (granate[i].item.x < 0 || granate[i].item.x > NCOLS)
+                        {
+                            if (granate[i].tid != -1)
+                            {  // se è fuori dai bordi cancello il thread
+                                pthread_cancel(granate[i].tid);
+                                pthread_join(granate[i].tid, NULL);
+                                granate[i].tid = -1;
+                            }
+                        }
+                        break;
+                    }
+                }
+
+                if (!trovate)
+                {
+                    for (int i = 0; i < N_GRANATE; i++)
+                    {
+                        if (granate[i].tid == -1)
+                        { 
+                            granate[i] = temp;
+                            trovate = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!trovate && temp.tid > 1)
+                {
+                    pthread_cancel(temp.tid);
+                    pthread_join(temp.tid, NULL);
+                }
+
+                break;
+
+            case 'c':                                                     // se legge un coccodrillo
+                for (int i = 0; i < NUMERO_FLUSSI * MAX_COCCODRILLI; i++) // scorre l'array
+                {
+                    if (cricca[i].tid == temp.tid) // cerca il coccodrillo corrispondente
+                    {
+                        cricca[i] = temp; // aggiorna il coccodrillo
+                    }
+                }
+                break;
+            case '-':
+                _Bool trovati = false;
+
+                for (int i = 0; i < N_PROIETTILI; i++)
+                {
+                    if (astuccio[i].tid == temp.tid)
+                    {
+                        astuccio[i] = temp;
+                        trovati = true;
+
+                        // Check se è fuori dai bordi
+                        if (astuccio[i].item.x < 0 || astuccio[i].item.x > NCOLS)
+                        {
+                            if (astuccio[i].tid != -1)
+                            {
+                                pthread_cancel(astuccio[i].tid);
+                                pthread_join(astuccio[i].tid, NULL);
+                                astuccio[i].tid = -1;
+                            }
+                        }
+                        break;
+                    }
+                }
+
+                if (!trovati)
+                {
+                    for (int i = 0; i < N_PROIETTILI; i++)
+                    {
+                        if (astuccio[i].tid == -1)
+                        { 
+                            astuccio[i] = temp;
+                            trovati = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!trovati && temp.tid != -1)
+                {
+                    pthread_cancel(temp.tid);
+                    pthread_join(temp.tid, NULL);
+                }
+
+                break;
+            }
+
+            reset = detectCollisione(&rana, cricca, astuccio, granate, tane, temp, wgioco, &vite, time(NULL) - start, &punti, audio);
+
+            if (reset)
+            { // resetto la posizione della rana e il tempo
+                rana.item.x = NCOLS / 2 - LARGHEZZA_RANA / 2;
+                rana.item.y = NLINES - ALTEZZA_RANA - 1;
+                start = time(NULL);
+                for (int i = 0; i < N_PROIETTILI; i++)
+                {
+                    if (astuccio[i].tid != -1)
+                    {
+                        pthread_cancel(astuccio[i].tid);
+                        pthread_join(astuccio[i].tid, NULL);
+                    }
+                }
+                for (int i = 0; i < N_GRANATE; i++)
+                {
+                    if (granate[i].tid != -1)
+                    {
+                        pthread_cancel(granate[i].tid);
+                        pthread_join(granate[i].tid, NULL);
+                    }
+                }
+                usleep(DELAY_CONTROLLO);
+                // inizializza di nuovo tutto
+                inizializzaProiettili(astuccio);
+                inizializzaGranate(granate);
+            }
+
+
+            wnoutrefresh(wgioco);
+            doupdate();
+            usleep(DELAY_CONTROLLO);
+        }
+        // fuori dal loop principale
         if (checkWin(tane))
         {
             break; // se vinci esci dal loop principale
         }
-
-        wnoutrefresh(wgioco);
-        doupdate();
-        usleep(DELAY_CONTROLLO);
+        cleanup(rana, cricca, astuccio, granate);
     }
-    // fuori dal loop principale
-    cleanup(rana, cricca, astuccio, granate, wgioco, whud, wtempo);
     menuFinale(punti, vite);
+    delwin(wgioco);
+    delwin(whud);
+    delwin(wtempo);
     pthread_exit(NULL);
 }
 

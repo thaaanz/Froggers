@@ -39,12 +39,8 @@ void avviancurses()
     init_pair(RED_TEMPO, COLOR_RED, COLOR_RED);
 }
 
-void cleanup(Thread rana, Thread* cricca, Thread* astuccio, Thread* granate, WINDOW* wgioco, WINDOW* whud, WINDOW* wtempo)
+void cleanup(Thread rana, Thread* cricca, Thread* astuccio, Thread* granate)
 {
-
-    delwin(wgioco);
-    delwin(whud);
-    delwin(wtempo);
 
     for(int i=0; i<NUMERO_FLUSSI*MAX_COCCODRILLI; i++)
     {

@@ -8,7 +8,7 @@
 //void avviaPipe(int* pipe_fd);
 void avviancurses();
 
-void cleanup(Thread rana, Thread* cricca, Thread* astuccio, Thread* granate, WINDOW* wgioco, WINDOW* whud, WINDOW* wtempo);
+void cleanup(Thread rana, Thread* cricca, Thread* astuccio, Thread* granate);
 Punteggio inizializzaPunteggio();
 void avviaFlussi(Flusso* fiume);
 #endif

@@ -28,5 +28,6 @@ _Bool checkWin(_Bool* tane);
 void handleMorteRana(Thread* rana, int* vite, Punteggio* punti, WINDOW* wgioco, GameAudio audio);
 _Bool detectCollisione(Thread* rana, Thread* cricca, Thread* astuccio, Thread* granate, _Bool* tane, Thread last,  WINDOW* debug, int* vite, int secondi, Punteggio* punti, GameAudio audio);
 void handleHud(WINDOW* whud, int vite, Punteggio punti);
+void handleTempo(WINDOW *wtempo, int start);
 
 #endif
