@@ -176,7 +176,7 @@ void menuFinale(Punteggio punti, int vite){
 
     sleep(3);
 
-    //riepilogo punti, premi un tasto qualsiasi per andare avanti
+    //riepilogo punti
     wclear(wmenu);
     box(wmenu, '#', '#');
     mvwprintw(wmenu, 3, 4, "Hai totalizzato i seguenti punti: %d", totalePunti(punti)); 
