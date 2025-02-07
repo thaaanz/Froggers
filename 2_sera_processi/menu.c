@@ -22,6 +22,13 @@ const char spriteWin[ALTEZZA_WIN][LARGHEZZA_WIN]={
 " \\__, |\\___/ \\__,_|   \\_/\\_/ \\___/|_| |_(_)",
 "|___/   "
 };
+const char newMancheSprite[ALTEZZA_NEW][LARGHEZZA_NEW]={
+"                                                  _          ",
+" _ __   _____      __  _ __ ___   __ _ _ __   ___| |__   ___ ",
+"| '_ \\ / _ \\ \\ /\\ / / | '_ ` _ \\ / _` | '_ \\ / __| '_ \\ / _ \\",
+"| | | |  __/\\ V  V /  | | | | | | (_| | | | | (__| | | |  __/",
+"|_| |_|\\___| \\_/\\_/   |_| |_| |_|\\__,_|_| |_|\\___|_| |_|\\___|"
+};
 
 _Bool utentePrivilegiato=false; // variabile globale
 
@@ -207,7 +214,6 @@ void menuFinale(Punteggio punti, int vite){
 void stampaWin(WINDOW* w){
      wclear(w);
     for(int i=0; i < ALTEZZA_WIN; i++){
-        flash();
         mvwprintw(w, 2+i, NCOLS/2-LARGHEZZA_WIN/2, spriteWin[i]);
     }
     wrefresh(w);
@@ -229,7 +235,6 @@ _Bool restart(){
     while(flag){
         wclear(wmenu);
         box(wmenu, '#', '#');
-
         mvwprintw(wmenu, 7, NCOLS/2-LARGHEZZA_MENU/2, "Vuoi rigiocare?");
         mvwprintw(wmenu, 10, NCOLS/2-LARGHEZZA_MENU/2, "Sì");
         mvwprintw(wmenu, 13, NCOLS/2-LARGHEZZA_MENU/2, "No");
@@ -244,20 +249,32 @@ _Bool restart(){
         {
             case KEY_UP:
                 i--;
-                flash();
                 if(i<0) i=1;
                 break;
             case KEY_DOWN:
                 i++;
                 break;
-            case 10:
+            case '\n':
+            case KEY_ENTER:
                 flag=false;
                 break;
         }
         i=i%2;
     }
+    delwin(wmenu);
     if(i==0){ //restart nuova partita
         return true;
     }
     else return false;
+}
+
+void stampaNewManche(WINDOW* w){
+    wclear(w);
+    wattron(w, COLOR_PAIR(COLORI_HUD));
+    for(int i=0; i < ALTEZZA_NEW; i++){
+        mvwprintw(w, 10+i, NCOLS/2-LARGHEZZA_NEW/2, newMancheSprite[i]);
+    }
+    wattroff(w, COLOR_PAIR(COLORI_HUD));
+    wrefresh(w);
+    sleep(1);
 }

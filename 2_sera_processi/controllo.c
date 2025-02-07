@@ -2,18 +2,20 @@
 
 void controllo()
 {
+
+    _Bool tane[NUMERO_TANE]={0}; //essenzialmente se è false la tana è libera 
+    int vite=MAX_VITE;
+    Punteggio punteggio=inizializzaPunteggio();
+
     WINDOW* wgioco=newwin(NLINES, NCOLS, HUDLINES, 0); //finestra di gioco con coccodrilli e rana
     WINDOW* whud=newwin(HUDLINES, NCOLS, 0, 0); //finestra che segna le vite e il tempo
     WINDOW* wtempo=newwin(NLINES -1, TCOLS, HUDLINES, NCOLS ); // colonna del tempo
 
     wbkgd(whud, COLOR_PAIR(COLORI_HUD));
     wbkgd(wtempo, COLOR_PAIR(COLORI_TEMPO));
-
-    _Bool tane[NUMERO_TANE]={0}; //essenzialmente se è false la tana è libera 
-    int vite=MAX_VITE;
-    Punteggio punteggio=inizializzaPunteggio();
-
     while(vite >0){
+        //grafica new manche
+        stampaNewManche(wgioco);
 
         int pipe_fd[2];
         int pipe_inversa[2];
@@ -234,6 +236,9 @@ void controllo()
     
     //fuori dal loop principale
     menuFinale(punteggio, vite);
+    delwin(wgioco);
+    delwin(whud);
+    delwin(wtempo);
 }
 
 BoundingBox createBoundingBox(int x, int y, int larghezza, int altezza) {

@@ -65,7 +65,7 @@
 #define DELAY_GRANATA 35000
 #define N_GRANATE 20
 #define MAX_TEMPO 60
-#define N_PROIETTILI 10//* max coccodrilli * numero flussi
+#define N_PROIETTILI 10
 #define N_MINE 3
 #define DIST_MAX_MINE 30
 #define DIST_MIN_MINE 14

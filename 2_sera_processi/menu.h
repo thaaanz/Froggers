@@ -10,9 +10,12 @@
 #define LARGHEZZA_GO 54
 #define ALTEZZA_WIN 5
 #define LARGHEZZA_WIN 49
+#define ALTEZZA_NEW 5
+#define LARGHEZZA_NEW 73
 
 extern const char spriteMenu[ALTEZZA_MENU][LARGHEZZA_MENU];
 extern const char spriteGameOver[ALTEZZA_GO][LARGHEZZA_GO];
+extern const char spriteWin[ALTEZZA_WIN][LARGHEZZA_WIN];
 extern const char spriteWin[ALTEZZA_WIN][LARGHEZZA_WIN];
 extern _Bool utentePrivilegiato;
 
@@ -23,5 +26,6 @@ void selezionaUtente(WINDOW* wmenu);
 void menuFinale(Punteggio punti, int vite);
 void stampaWin(WINDOW* w);
 void stampaGO(WINDOW* w);
+void stampaNewManche(WINDOW* w);
 
 #endif
