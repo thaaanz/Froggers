@@ -47,7 +47,10 @@ void cleanup(Thread rana, Thread* cricca, Thread* astuccio, Thread* granate)
     for(int i=0; i<NUMERO_FLUSSI*MAX_COCCODRILLI_PER_FLUSSO; i++) //termino coccodrilli ancora validi
     {
         if(cricca[i].tid != -1){
-            if(pthread_kill(cricca[i].tid, 0) == 0) {
+            if(pthread_tryjoin_np(cricca[i].tid, NULL) == 0) { //il coccodrillo è morto
+                cricca[i].tid=-1;
+            }
+            else{
                 if(pthread_cancel(cricca[i].tid) == 0) {
                     pthread_join(cricca[i].tid, NULL);
                 }
@@ -59,7 +62,10 @@ void cleanup(Thread rana, Thread* cricca, Thread* astuccio, Thread* granate)
     for(int i=0; i<N_PROIETTILI; i++) //termino proiettili ancora validi
     {
         if(astuccio[i].tid != -1){
-            if(pthread_kill(astuccio[i].tid, 0) == 0) {
+            if(pthread_tryjoin_np(astuccio[i].tid, NULL) == 0) { //il proiettile è morto
+                astuccio[i].tid=-1;
+            }
+            else{
                 if(pthread_cancel(astuccio[i].tid) == 0) {
                     pthread_join(astuccio[i].tid, NULL);
                 }
@@ -72,7 +78,10 @@ void cleanup(Thread rana, Thread* cricca, Thread* astuccio, Thread* granate)
     for(int i=0; i<N_GRANATE; i++) //termino granate ancora valide
     {
         if(granate[i].tid != -1){
-            if(pthread_kill(granate[i].tid, 0) == 0) {
+            if(pthread_tryjoin_np(granate[i].tid, NULL)==0) { //la granata è morta
+                granate[i].tid=-1;
+            }
+            else{
                 if(pthread_cancel(granate[i].tid) == 0) {
                     pthread_join(granate[i].tid, NULL);
                 }

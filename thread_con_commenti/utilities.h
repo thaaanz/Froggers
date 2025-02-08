@@ -1,6 +1,7 @@
 #ifndef UTILITIES_H
 #define UTILITIES_H
 
+#define _GNU_SOURCE
 //librerie
 #include <stdio.h>
 #include <unistd.h>

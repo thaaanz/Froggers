@@ -29,7 +29,12 @@ void avviaCoccodrilli(Flusso* fiume, Thread* cricca, Semafori* s)
         {
             pthread_t tid;
             
-            Cocco c={cricca[i].item, s, fiume[f], (rand()%4)}; //inserisco i dati nella struttura
+            static Cocco c; //la variabile continua ad esistere anche fuori da questa funzione, quando viene passata a "funzioneCoccodrillo" non causa problemi
+            c.item = cricca[i].item;
+            c.semafori = s;
+            c.f = fiume[f];
+            c.offset = (rand() % 4);
+            //c={cricca[i].item, s, fiume[f], (rand()%4)}; //inserisco i dati nella struttura
             //passo un offset random per fare in modo che i coccodrilli vengano generati a distanze diverse tra loro
             if( pthread_create(&tid, NULL, &funzioneCoccodrillo, &c) != 0) {//creo il thread e gli passo la funzione 
                 perror("ERRORE CREAZIONE THREAD COCCODRILLO");

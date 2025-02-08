@@ -130,23 +130,31 @@ void *controllo(void *semafori)
                 for (int i = 0; i < N_PROIETTILI; i++)
                 {
                     if(astuccio[i].tid != -1){
-                        if (pthread_kill(astuccio[i].tid, 0) == 0) {
-                            if (pthread_cancel(astuccio[i].tid) == 0) {
+                        if(pthread_tryjoin_np(astuccio[i].tid, NULL) == 0) { //il proiettile è morto
+                            astuccio[i].tid=-1;
+                        }
+                        else{
+                            if(pthread_cancel(astuccio[i].tid) == 0) {
                                 pthread_join(astuccio[i].tid, NULL);
                             }
                             else exit(ERRORE_CANCEL_PROIETTILI);
                         }
+                        astuccio[i].tid=-1;
                     }
                 }
                 for (int i = 0; i < N_GRANATE; i++)
                 {
-                    if (granate[i].tid != -1)
-                    {
-                        if (pthread_kill(granate[i].tid, 0) == 0) {
-                            if (pthread_cancel(granate[i].tid) == 0) {
+                    if(granate[i].tid != -1){
+                        if(pthread_tryjoin_np(granate[i].tid, NULL) == 0) { //la granata è morta
+                            granate[i].tid=-1;
+                        }
+                        else{
+                            if(pthread_cancel(granate[i].tid) == 0) {
                                 pthread_join(granate[i].tid, NULL);
                             }
+                            else exit(ERRORE_CANCEL_GRANATE);
                         }
+                        granate[i].tid=-1;
                     }
                 }
                 // inizializza di nuovo tutto
@@ -355,21 +363,29 @@ _Bool detectCollisione(Thread *rana, Thread *cricca, Thread *astuccio, Thread *g
                         //termino i thread nel caso di collisione
                         if (astuccio[i].tid != -1)
                         {
-                            if (pthread_kill(astuccio[i].tid, 0) == 0) {
-                                pthread_cancel(astuccio[i].tid);
-                                pthread_join(astuccio[i].tid, NULL);
+                            if(pthread_tryjoin_np(astuccio[i].tid, NULL) == 0) { //il proiettile è morto
+                                astuccio[i].tid=-1;
                             }
-                            else exit(ERRORE_CANCEL_PROIETTILI);
+                            else{
+                                if(pthread_cancel(astuccio[i].tid) == 0) {
+                                    pthread_join(astuccio[i].tid, NULL);
+                                }
+                                else exit(ERRORE_CANCEL_PROIETTILI);
+                            }
                         astuccio[i].tid = -1;
                         }
 
                         if (granate[j].tid != -1)
                         {
-                            if (pthread_kill(granate[j].tid, 0) == 0) {
-                                pthread_cancel(granate[j].tid);
-                                pthread_join(granate[j].tid, NULL);
+                            if(pthread_tryjoin_np(granate[j].tid, NULL) == 0) { //la granata è morta
+                                granate[j].tid=-1;
                             }
-                            else exit(ERRORE_CANCEL_PROIETTILI);
+                            else{
+                                if(pthread_cancel(granate[j].tid) == 0) {
+                                    pthread_join(granate[j].tid, NULL);
+                                }
+                                else exit(ERRORE_CANCEL_GRANATE);
+                            }
                             granate[j].tid = -1;
                         }
                     }
@@ -430,8 +446,12 @@ void posizionaSparo(Thread p, Thread* array, int dim_array)
             if(array[i].tid==p.tid) //una volta che lo trovo
             {
                 if (array[i].tid != -1)
-                    {          
-                        if (pthread_kill(array[i].tid, 0) == 0) {
+                    {       
+                        if(pthread_tryjoin_np(array[i].tid, NULL) == 0) { //il proiettile è morto
+                            array[i].tid=-1;
+                        }
+                        else{
+                        
                             if (pthread_cancel(array[i].tid) == 0) {
                                 pthread_join(array[i].tid, NULL);
                             }
@@ -474,11 +494,14 @@ void posizionaSparo(Thread p, Thread* array, int dim_array)
     {
         if(p.tid != -1)
         {
-            if (pthread_kill(p.tid, 0) == 0) {
-                if (pthread_cancel(p.tid) == 0) {
+            if(pthread_tryjoin_np(p.tid, NULL) == 0) { //il proiettile è morto
+                p.tid=-1;
+            }
+            else{
+                if(pthread_cancel(p.tid) == 0) {
                     pthread_join(p.tid, NULL);
                 }
-                else exit(ERRORE_CANCEL_SPARO);
+            else exit(ERRORE_CANCEL_SPARO);
             }
         }
     }
