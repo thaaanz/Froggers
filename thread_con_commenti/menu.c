@@ -30,6 +30,20 @@ const char newMancheSprite[ALTEZZA_NEW][LARGHEZZA_NEW]={
 "|_| |_|\\___| \\_/\\_/   |_| |_| |_|\\__,_|_| |_|\\___|_| |_|\\___|"
 };
 
+const char spriteFrogger[H_FROGGER][W_FROGGER]={
+"              _____ ____   ___   ____  ____ _____ ____",
+"             |  ___|  _ \\ / _ \\ / ___|/ ___| ____|  _ \\",
+"             | |_  | |_) | | | | |  _| |  _|  _| | |_) |",
+"             |  _| |  _ <| |_| | |_| | |_| | |___|  _ <",
+"             |_|   |_|  \\_\\___/ \\____|\\____|_____|_| \\_\\",
+"",
+" ____  _____ ____  _   _ ____  ____  _____ ____ _____ ___ ___  _   _",
+"|  _ \\| ____/ ___|| | | |  _ \\|  _ \\| ____/ ___|_   _|_ _/ _ \\| \\ | |", 
+"| |_) |  _| \\___ \\| | | | |_) | |_) |  _|| |     | |  | | | | |  \\| |",
+"|  _ <| |___ ___) | |_| |  _ <|  _ <| |__| |___  | |  | | |_| | |\\  |",
+"|_| \\_\\_____|____/ \\___/|_| \\_\\_| \\_\\_____\\____| |_| |___\\___/|_| \\_|"
+};
+
 _Bool utentePrivilegiato=false; // variabile globale
 
 int menuIniziale(){
@@ -168,17 +182,19 @@ void selezionaUtente(WINDOW* wmenu){
     }
 }
 
-void menuFinale(Punteggio punti, int vite){
-
+void menuFinale(Punteggio punti, int vite)
+{
     clear();
     refresh();
     WINDOW* wmenu=newwin(NLINES+HUDLINES, NCOLS, 0, 0);
 
-    if(vite > 0){
+    if(vite > 0)
+    {
         stampaWin(wmenu); //se si vince
     }
-    else{
-        stampaGO(wmenu); // se si perde
+    else
+    {
+        stampaGO(wmenu); //se si perde
     }
 
     sleep(3);
@@ -186,26 +202,26 @@ void menuFinale(Punteggio punti, int vite){
     //riepilogo punti
     wclear(wmenu);
     box(wmenu, '#', '#');
-    mvwprintw(wmenu, 3, 4, "Hai totalizzato i seguenti punti: %d", totalePunti(punti)); 
+    mvwprintw(wmenu, 3, 4, "PUNTI TOTALI: %d  (di  cui:)", totalePunti(punti)); 
     wrefresh(wmenu);
     usleep(350000);
-    mvwprintw(wmenu, 5, 4, "Chiusura tane: %d", punti.tane);
+    mvwprintw(wmenu, 5, 4, "--> tane: %d", punti.tane);
     wrefresh(wmenu);
     usleep(350000);
     if(utentePrivilegiato==true) 
     {
         punti.salti-=1000;
     }
-    mvwprintw(wmenu, 7, 4, "Salti: %d", punti.salti);
+    mvwprintw(wmenu, 7, 4, "--> salti: %d", punti.salti);
     wrefresh(wmenu);
     usleep(350000);
-    mvwprintw(wmenu, 9, 4, "Esplosione dei proiettili: %d", punti.proiettili);
+    mvwprintw(wmenu, 9, 4, "--> distruzione proiettili: %d", punti.proiettili);
     wrefresh(wmenu);
     usleep(350000);
-    mvwprintw(wmenu, 11, 4, "Scorrere del tempo: %d", punti.tempo);
+    mvwprintw(wmenu, 11, 4, "--> tempo: %d", punti.tempo);
     wrefresh(wmenu);
     usleep(350000);
-    mvwprintw(wmenu, 13, 4, "Morti: -%d", punti.morte);
+    mvwprintw(wmenu, 13, 4, "--> morte: -%d", punti.morte);
     wrefresh(wmenu);
     usleep(350000);
     if(utentePrivilegiato==true)
@@ -215,7 +231,7 @@ void menuFinale(Punteggio punti, int vite){
         usleep(350000);
     }
     wattron(wmenu, COLOR_PAIR(COLORI_HUD));
-    mvwprintw(wmenu, 15, 4, "Premi un tasto per continuare");
+    mvwprintw(wmenu, 17, 4, "Premi un tasto per continuare");
     wattroff(wmenu, COLOR_PAIR(COLORI_HUD));
     wrefresh(wmenu);
     wgetch(wmenu);
@@ -287,4 +303,21 @@ void stampaNewManche(WINDOW* w){
     wattroff(w, COLOR_PAIR(COLORI_HUD));
     wrefresh(w);
     sleep(1);
+}
+
+void stampaFrogger()
+{
+    WINDOW* wmenu=newwin(NLINES+HUDLINES, NCOLS, 0, 0);
+    box(wmenu, '*', '*');
+
+    wattron(wmenu, COLOR_PAIR(COLORI_HUD));
+    for(int i=0; i < H_FROGGER; i++)
+    {
+        mvwprintw(wmenu, NLINES/2-H_FROGGER+i, 2, spriteFrogger[i]);
+    }
+    wattroff(wmenu, COLOR_PAIR(COLORI_HUD));
+    wrefresh(wmenu);
+
+    sleep(3);
+    endwin();
 }

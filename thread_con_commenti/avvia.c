@@ -44,7 +44,7 @@ void avviancurses()
 void cleanup(Thread rana, Thread* cricca, Thread* astuccio, Thread* granate)
 {
 
-    for(int i=0; i<NUMERO_FLUSSI*MAX_COCCODRILLI; i++) //termino coccodrilli ancora validi
+    for(int i=0; i<NUMERO_FLUSSI*MAX_COCCODRILLI_PER_FLUSSO; i++) //termino coccodrilli ancora validi
     {
         if(cricca[i].tid != -1){
             if(pthread_kill(cricca[i].tid, 0) == 0) {

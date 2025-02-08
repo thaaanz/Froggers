@@ -5,13 +5,12 @@
 #include "menu.h"
 #include "buffer.h"
 
-// nella versione processi c'è avia controllo e menù
-// io cambierei mettendo qua nel main la creazione dei thread
-//+ nella versione processi non creiamo un processo controllo, qua sì?
 int main()
 {
     avviancurses();
     srand(time(NULL));
+
+    stampaFrogger();
 
     if (menuIniziale())
     {
@@ -37,7 +36,6 @@ int main()
 
     } while (restart());
     
-    //pthread_mutex_destroy(&mutex);
     sem_destroy(&sem_occupati);
     sem_destroy(&sem_liberi);
 

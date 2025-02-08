@@ -14,7 +14,7 @@ void avviaCoccodrilli(Flusso* fiume, Thread* cricca, Semafori* s)
 {
     int i=0; //inizializzo un indice che scorre la totalità dei coccodrilli 
 
-    for(int k=0; k<NUMERO_FLUSSI*MAX_COCCODRILLI; k++) //inizializzo tutto l'array
+    for(int k=0; k<NUMERO_FLUSSI*MAX_COCCODRILLI_PER_FLUSSO; k++) //inizializzo tutto l'array
     {
         cricca[k].tid=0;
         cricca[k].item.id='c';
@@ -23,7 +23,7 @@ void avviaCoccodrilli(Flusso* fiume, Thread* cricca, Semafori* s)
         cricca[k].item.dir=0;
     }
 
-    for(int n=0; n < MAX_COCCODRILLI; n++) //n scorre i coccodrilli per ogni riga
+    for(int n=0; n < MAX_COCCODRILLI_PER_FLUSSO; n++) //n scorre i coccodrilli per ogni riga
     {
         for(int f=0; f<NUMERO_FLUSSI; f++) //f scorre i flussi
         {
@@ -96,7 +96,7 @@ void stampaCoccodrilli(Thread* cricca, WINDOW* wgioco)
 {
     wattron(wgioco, COLOR_PAIR(COLORI_COCCODRILLO));
 
-    for(int c=0; c<(NUMERO_FLUSSI*MAX_COCCODRILLI); c++) //scorro i coccodrilli
+    for(int c=0; c<(NUMERO_FLUSSI*MAX_COCCODRILLI_PER_FLUSSO); c++) //scorro i coccodrilli
     {
         for (int i = 0; i < ALTEZZA_COCCODRILLO; i++) //stampo le righe
         { 

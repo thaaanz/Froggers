@@ -20,7 +20,7 @@
 #define LARGHEZZA_RANA 5
 
 //coccodrilli
-#define MAX_COCCODRILLI 4
+#define MAX_COCCODRILLI_PER_FLUSSO 4
 #define MAX_SPEED 5
 #define DIR_RIGHT 1
 #define DIR_LEFT -1
@@ -69,6 +69,8 @@
 #define LARGHEZZA_WIN 49
 #define ALTEZZA_NEW 5
 #define LARGHEZZA_NEW 73
+#define H_FROGGER 11
+#define W_FROGGER 79
 
 //altro
 #define N_PROIETTILI 10//* max coccodrilli * numero flussi
@@ -107,7 +109,7 @@
 #define ERRORE_CANCEL_SPARO 10 //generico per la funzione posizionaSparo
 
 //aggiunte dei thread 
-#define DIM_BUFFER 500
+#define DIM_BUFFER 60
 
 
 typedef struct{

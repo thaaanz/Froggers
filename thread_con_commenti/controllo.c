@@ -26,7 +26,7 @@ void *controllo(void *semafori)
         Flusso fiume[NUMERO_FLUSSI];
         avviaFlussi(fiume); //crea i flussi
         Thread rana = avviaRana(s); //avvia thread rana
-        Thread cricca[NUMERO_FLUSSI * MAX_COCCODRILLI]; // cricca di coccodrilli
+        Thread cricca[NUMERO_FLUSSI * MAX_COCCODRILLI_PER_FLUSSO]; // cricca di coccodrilli
         Thread granate[N_GRANATE]; //creo array granate
         Thread astuccio[N_PROIETTILI]; // creo array astuccio dei proiettili
         Thread temp; //thread temporaneo per la lettura dal buffer
@@ -106,7 +106,7 @@ void *controllo(void *semafori)
                 break;
 
             case 'c': // caso coccodrillo  
-                for (int i = 0; i < NUMERO_FLUSSI * MAX_COCCODRILLI; i++) // scorre l'array
+                for (int i = 0; i < NUMERO_FLUSSI * MAX_COCCODRILLI_PER_FLUSSO; i++) // scorre l'array
                 {
                     if (cricca[i].tid == temp.tid) // cerca il coccodrillo corrispondente
                     {
@@ -186,7 +186,7 @@ BoundingBox createBoundingBox(int x, int y, int larghezza, int altezza)
 
 _Bool checksovrapposizione(BoundingBox a, BoundingBox b)
 {
-    return (a.x + a.width <= b.x + b.width && // l'estremo destro di a èa sinistra dell'estremo destro di b
+    return (a.x + a.width <= b.x + b.width && // l'estremo destro di a è a sinistra dell'estremo destro di b
             a.x + a.width > b.x && // l'estremo destro di a è a destra dell'estremo sinistro di b
             a.y < b.y + b.height && // a è più in basso dell'estremo superiore di b
             a.y + a.height > b.y); // a è più in alto dell'estremo inferiore di b
@@ -286,7 +286,7 @@ _Bool detectCollisione(Thread *rana, Thread *cricca, Thread *astuccio, Thread *g
 
     // Check collisione con coccodrillo
     _Bool isOnCoccodrillo = false; //flag per sapere se la rana sta sul coccodrillo
-    for (int i = 0; i < NUMERO_FLUSSI * MAX_COCCODRILLI; i++) //scorro i coccodrilli
+    for (int i = 0; i < NUMERO_FLUSSI * MAX_COCCODRILLI_PER_FLUSSO; i++) //scorro i coccodrilli
     {
         if (cricca[i].tid != -1)
         { // prima controlla se è attivo

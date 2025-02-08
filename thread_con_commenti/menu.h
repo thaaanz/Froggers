@@ -27,5 +27,6 @@ void menuFinale(Punteggio punti, int vite);
 void stampaWin(WINDOW* w);
 void stampaGO(WINDOW* w);
 void stampaNewManche(WINDOW* w);
+void stampaFrogger();
 
 #endif
