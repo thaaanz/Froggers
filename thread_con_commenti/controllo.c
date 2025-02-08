@@ -355,15 +355,21 @@ _Bool detectCollisione(Thread *rana, Thread *cricca, Thread *astuccio, Thread *g
                         //termino i thread nel caso di collisione
                         if (astuccio[i].tid != -1)
                         {
-                            pthread_cancel(astuccio[i].tid);
-                            pthread_join(astuccio[i].tid, NULL);
-                            astuccio[i].tid = -1;
+                            if (pthread_kill(astuccio[i].tid, 0) == 0) {
+                                pthread_cancel(astuccio[i].tid);
+                                pthread_join(astuccio[i].tid, NULL);
+                            }
+                            else exit(ERRORE_CANCEL_PROIETTILI);
+                        astuccio[i].tid = -1;
                         }
 
                         if (granate[j].tid != -1)
                         {
-                            pthread_cancel(granate[j].tid);
-                            pthread_join(granate[j].tid, NULL);
+                            if (pthread_kill(granate[j].tid, 0) == 0) {
+                                pthread_cancel(granate[j].tid);
+                                pthread_join(granate[j].tid, NULL);
+                            }
+                            else exit(ERRORE_CANCEL_PROIETTILI);
                             granate[j].tid = -1;
                         }
                     }
