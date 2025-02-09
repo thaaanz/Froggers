@@ -130,15 +130,15 @@ void *controllo(void *parametri)
                 for (int i = 0; i < N_PROIETTILI; i++)
                 {
                     if(astuccio[i].tid != -1){
-                        int try_join = pthread_tryjoin_np(astuccio[i].tid, NULL);
-                        if(try_join == 0 || try_join == ESRCH) {
-                            astuccio[i].tid = -1;
+                        int try_join = pthread_tryjoin_np(astuccio[i].tid, NULL); //tentativo di join non bloccante
+                        if(try_join == 0 || try_join == ESRCH) { //se il thread è già terminato o non è stato trovato
+                            astuccio[i].tid = -1; //segno come terminato
                             astuccio[i].item= (Oggetto){0, 0, 0, 0};
                         }
-                        else{
-                            if(pthread_cancel(astuccio[i].tid) == 0) {
-                                pthread_join(astuccio[i].tid, NULL);
-                                astuccio[i].tid = -1;
+                        else{ //altrimenti
+                            if(pthread_cancel(astuccio[i].tid) == 0) { //temino il thread
+                                pthread_join(astuccio[i].tid, NULL); //attendo la terminazione (join bloccante)
+                                astuccio[i].tid = -1; //segno come terminato
                                 astuccio[i].item= (Oggetto){0, 0, 0, 0};
                             }
                             else exit(ERRORE_CANCEL_PROIETTILI);
@@ -148,15 +148,15 @@ void *controllo(void *parametri)
                 for (int i = 0; i < N_GRANATE; i++)
                 {
                     if(granate[i].tid != -1){
-                        int try_join = pthread_tryjoin_np(granate[i].tid, NULL);
-                        if(try_join == 0 || try_join == ESRCH) {
-                            granate[i].tid = -1;
+                        int try_join = pthread_tryjoin_np(granate[i].tid, NULL); //tentativo di join non bloccante
+                        if(try_join == 0 || try_join == ESRCH) { //se il thread è già terminato o non è stato trovato
+                            granate[i].tid = -1; //segno come terminato
                             granate[i].item= (Oggetto){0, 0, 0, 0};
                         }
-                        else{
-                            if(pthread_cancel(granate[i].tid) == 0) {
-                                pthread_join(granate[i].tid, NULL);
-                                granate[i].tid = -1;
+                        else{ //altrimenti
+                            if(pthread_cancel(granate[i].tid) == 0) { //temino il thread
+                                pthread_join(granate[i].tid, NULL); //attendo la terminazione (join bloccante)
+                                granate[i].tid = -1; //segno come terminato
                                 granate[i].item= (Oggetto){0, 0, 0, 0};
                             }
                             else exit(ERRORE_CANCEL_GRANATE);
@@ -368,15 +368,15 @@ _Bool detectCollisione(Thread *rana, Thread *cricca, Thread *astuccio, Thread *g
                         //termino i thread nel caso di collisione
                         if (astuccio[i].tid != -1)
                         {
-                            int try_join = pthread_tryjoin_np(astuccio[i].tid, NULL);
-                            if (try_join == 0 || try_join == ESRCH) {
-                                astuccio[i].tid = -1;
+                            int try_join = pthread_tryjoin_np(astuccio[i].tid, NULL);   //tentativo di join non bloccante
+                            if (try_join == 0 || try_join == ESRCH) { //se il thread è già terminato o non è stato trovato
+                                astuccio[i].tid = -1; //segno come terminato
                                 astuccio[i].item= (Oggetto){0, 0, 0, 0};
                             }
-                            else{
-                                if(pthread_cancel(astuccio[i].tid) == 0) {
-                                    pthread_join(astuccio[i].tid, NULL);
-                                    astuccio[i].tid = -1;
+                            else{ //altrimenti
+                                if(pthread_cancel(astuccio[i].tid) == 0) { //temino il thread
+                                    pthread_join(astuccio[i].tid, NULL);   //attendo la terminazione (join bloccante)
+                                    astuccio[i].tid = -1; //segno come terminato
                                     astuccio[i].item= (Oggetto){0, 0, 0, 0};
                                 }
                                 else exit(ERRORE_CANCEL_PROIETTILI);
@@ -385,15 +385,15 @@ _Bool detectCollisione(Thread *rana, Thread *cricca, Thread *astuccio, Thread *g
 
                         if (granate[j].tid != -1)
                         {
-                            int try_join = pthread_tryjoin_np(granate[j].tid, NULL);
-                            if(try_join == 0 || try_join == ESRCH) {
-                                granate[j].tid = -1;
+                            int try_join = pthread_tryjoin_np(granate[j].tid, NULL);  //tentativo di join non bloccante
+                            if(try_join == 0 || try_join == ESRCH) { //se il thread è già terminato o non è stato trovato
+                                granate[j].tid = -1; //segno come terminato
                                 granate[j].item= (Oggetto){0, 0, 0, 0};
                             }
                             else{
-                                if(pthread_cancel(granate[j].tid) == 0) {
-                                    pthread_join(granate[j].tid, NULL);
-                                    granate[j].tid = -1;
+                                if(pthread_cancel(granate[j].tid) == 0) { //temino il thread
+                                    pthread_join(granate[j].tid, NULL); //attendo la terminazione (join bloccante)
+                                    granate[j].tid = -1; //segno come terminato
                                     granate[j].item= (Oggetto){0, 0, 0, 0};
                                 }
                                 else exit(ERRORE_CANCEL_GRANATE);
@@ -454,17 +454,18 @@ void posizionaSparo(Thread p, Thread* array, int dim_array) {
         for (int i = 0; i < dim_array; i++) {
             if (array[i].tid == p.tid) {
                 if (array[i].tid != -1) {
-                    int try_join = pthread_tryjoin_np(array[i].tid, NULL);
-                    if (try_join == 0 || try_join == ESRCH) {
-                        // Thread già terminato
-                        array[i].tid = -1;
+                    int try_join = pthread_tryjoin_np(array[i].tid, NULL); //tentativo di join non bloccante
+                    if (try_join == 0 || try_join == ESRCH) { //se il thread è già terminato o non è stato trovato
+                        array[i].tid = -1; //segno come terminato
+                        array[i].item= (Oggetto){0, 0, 0, 0};
                     } else {
-                        if (pthread_cancel(array[i].tid) == 0) {
-                            pthread_join(array[i].tid, NULL);
+                        if (pthread_cancel(array[i].tid) == 0) { //temino il thread
+                            pthread_join(array[i].tid, NULL); //attendo la terminazione (join bloccante)
+                            array[i].tid = -1; //segno come terminato
+                            array[i].item= (Oggetto){0, 0, 0, 0};
                         } else {
                             fprintf(stderr, "Errore cancellazione thread\n");
                         }
-                        array[i].tid = -1;
                     }
                 }
                 found = true;
@@ -496,10 +497,10 @@ void posizionaSparo(Thread p, Thread* array, int dim_array) {
 
     if (!found && p.tid != -1) {
         // Se non c'è spazio, termina il thread
-        int try_join = pthread_tryjoin_np(p.tid, NULL);
-        if (try_join != 0 && try_join != ESRCH) {
-            if (pthread_cancel(p.tid) == 0) {
-                pthread_join(p.tid, NULL);
+        int try_join = pthread_tryjoin_np(p.tid, NULL); //tentativo di join non bloccante
+        if (try_join != 0 && try_join != ESRCH) {   //se il thread è già terminato o non è stato trovato
+            if (pthread_cancel(p.tid) == 0) { //temino il thread
+                pthread_join(p.tid, NULL);  //attendo la terminazione (join bloccante)
             }
         }
     }

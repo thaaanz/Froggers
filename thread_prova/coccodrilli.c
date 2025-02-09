@@ -49,7 +49,7 @@ void avviaCoccodrilli(Flusso* fiume, Thread* cricca, Semafori* s)
 void* funzioneCoccodrillo(void* parametri)
 {
     Cocco c=*((Cocco*) parametri); //cast dell'argomento della thread function
-    static Params parametro;
+    static Params parametro; //la variabile continua ad esistere anche fuori da questa funzione, quando viene passata a "funzioneProiettile" non causa problemi
     parametro.item=c.item;
     parametro.semafori=c.semafori;
     int delay, starting_x; //delay per la velocità del coccodrillo(in base a quella del flusso) e x di partenza (in base all'offset)
