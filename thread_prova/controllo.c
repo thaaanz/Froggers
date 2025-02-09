@@ -133,11 +133,13 @@ void *controllo(void *semafori)
                         int try_join = pthread_tryjoin_np(astuccio[i].tid, NULL);
                         if(try_join == 0 || try_join == ESRCH) {
                             astuccio[i].tid = -1;
+                            astuccio[i].item= (Oggetto){0, 0, 0, 0};
                         }
                         else{
                             if(pthread_cancel(astuccio[i].tid) == 0) {
                                 pthread_join(astuccio[i].tid, NULL);
                                 astuccio[i].tid = -1;
+                                astuccio[i].item= (Oggetto){0, 0, 0, 0};
                             }
                             else exit(ERRORE_CANCEL_PROIETTILI);
                         }
@@ -149,11 +151,13 @@ void *controllo(void *semafori)
                         int try_join = pthread_tryjoin_np(granate[i].tid, NULL);
                         if(try_join == 0 || try_join == ESRCH) {
                             granate[i].tid = -1;
+                            granate[i].item= (Oggetto){0, 0, 0, 0};
                         }
                         else{
                             if(pthread_cancel(granate[i].tid) == 0) {
                                 pthread_join(granate[i].tid, NULL);
                                 granate[i].tid = -1;
+                                granate[i].item= (Oggetto){0, 0, 0, 0};
                             }
                             else exit(ERRORE_CANCEL_GRANATE);
                         }
@@ -368,14 +372,16 @@ _Bool detectCollisione(Thread *rana, Thread *cricca, Thread *astuccio, Thread *g
                             int try_join = pthread_tryjoin_np(astuccio[i].tid, NULL);
                             if (try_join == 0 || try_join == ESRCH) {
                                 astuccio[i].tid = -1;
+                                astuccio[i].item= (Oggetto){0, 0, 0, 0};
                             }
                             else{
                                 if(pthread_cancel(astuccio[i].tid) == 0) {
                                     pthread_join(astuccio[i].tid, NULL);
+                                    astuccio[i].tid = -1;
+                                    astuccio[i].item= (Oggetto){0, 0, 0, 0};
                                 }
                                 else exit(ERRORE_CANCEL_PROIETTILI);
                             }
-                        astuccio[i].tid = -1;
                         }
 
                         if (granate[j].tid != -1)
@@ -383,14 +389,16 @@ _Bool detectCollisione(Thread *rana, Thread *cricca, Thread *astuccio, Thread *g
                             int try_join = pthread_tryjoin_np(granate[j].tid, NULL);
                             if(try_join == 0 || try_join == ESRCH) {
                                 granate[j].tid = -1;
+                                granate[j].item= (Oggetto){0, 0, 0, 0};
                             }
                             else{
                                 if(pthread_cancel(granate[j].tid) == 0) {
                                     pthread_join(granate[j].tid, NULL);
+                                    granate[j].tid = -1;
+                                    granate[j].item= (Oggetto){0, 0, 0, 0};
                                 }
                                 else exit(ERRORE_CANCEL_GRANATE);
                             }
-                            granate[j].tid = -1;
                         }
                     }
                 }
