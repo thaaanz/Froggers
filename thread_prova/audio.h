@@ -6,15 +6,17 @@
 
 //definisco una struttura GameAudio che contiene tutti i suoni del gioco
 typedef struct{
-    Mix_Music* musica;
+    Mix_Music* musica_gioco;
+    Mix_Music* musica_menu;
     Mix_Chunk* salto_rana;
     Mix_Chunk* morte_rana;
     Mix_Chunk* sparo_granata;
     Mix_Chunk* chiusura_tana;
+    Mix_Chunk* freccia_menu;
 } GameAudio;
 
 void inizializzaAudio(GameAudio* audio);
-void riproduciMusica(GameAudio* audio);
+void riproduciMusica(Mix_Music* musica);
 void riproduciSuono(Mix_Chunk* suono);
 void freeAudio(GameAudio* audio);
 

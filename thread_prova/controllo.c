@@ -1,8 +1,10 @@
 #include "controllo.h"
 
-void *controllo(void *semafori)
+void *controllo(void *parametri)
 {
-    Semafori *s = (Semafori *)semafori;
+    ParametriControllo *p= (ParametriControllo *)parametri;
+    Semafori s = p->semafori;
+    GameAudio audio= p->audio;
 
     WINDOW *wgioco = newwin(NLINES, NCOLS, HUDLINES, 0); // finestra di gioco con coccodrilli e rana
     WINDOW *whud = newwin(HUDLINES, NCOLS, 0, 0);        // finestra che segna le vite e il tempo
@@ -11,10 +13,8 @@ void *controllo(void *semafori)
     wbkgd(whud, COLOR_PAIR(COLORI_HUD)); //imposto il colore di bg delle finestre
     wbkgd(wtempo, COLOR_PAIR(COLORI_TEMPO));
 
-    //audio
-    GameAudio audio; //inizializzo la strttura contenente gli audio di gioco
-    inizializzaAudio(&audio);//inizilizzo l'audio
-    riproduciMusica(&audio);//faccio partire la musica di sottofondo
+    riproduciMusica(audio.musica_gioco); //faccio partire la musica di sottofondo
+
     _Bool tane[NUMERO_TANE] = {0}; // essenzialmente se è false la tana è libera
     int vite = MAX_VITE; //inizializzo le vite
     Punteggio punti = inizializzaPunteggio();
@@ -25,7 +25,7 @@ void *controllo(void *semafori)
         // inizializzazioni
         Flusso fiume[NUMERO_FLUSSI];
         avviaFlussi(fiume); //crea i flussi
-        Thread rana = avviaRana(s); //avvia thread rana
+        Thread rana = avviaRana(&s); //avvia thread rana
         Thread cricca[NUMERO_FLUSSI * MAX_COCCODRILLI_PER_FLUSSO]; // cricca di coccodrilli
         Thread granate[N_GRANATE]; //creo array granate
         Thread astuccio[N_PROIETTILI]; // creo array astuccio dei proiettili
@@ -34,7 +34,7 @@ void *controllo(void *semafori)
         Oggetto mine[N_MINE]; //creo le mine (ostacoli in più nella sponda)
         inizializzaMine(mine); //inizializza array mine
 
-        avviaCoccodrilli(fiume, cricca, s); //avvia thread coccodrilli
+        avviaCoccodrilli(fiume, cricca, &s); //avvia thread coccodrilli
         inizializzaGranate(granate); //inizializza array granate
         inizializzaProiettili(astuccio); //inizializza array proiettili
 
@@ -68,7 +68,7 @@ void *controllo(void *semafori)
             wnoutrefresh(wtempo);
             doupdate();
 
-            temp = leggi(s); // lettura dal buffer 
+            temp = leggi(&s); // lettura dal buffer 
 
             switch (temp.item.id)
             {
@@ -94,7 +94,7 @@ void *controllo(void *semafori)
                 //controllo se c'è almeno una granata disponibile
                 for(int i=0; i < N_GRANATE; i++){
                     if(granate[i].tid == -1){ //quando trovo lo spazio disponibile
-                        avviaGranate(rana, semafori);
+                        avviaGranate(rana, &s);
                         break;
                     }
                 }
@@ -180,11 +180,10 @@ void *controllo(void *semafori)
         usleep(DELAY_CONTROLLO);
     }
     //fuori dal loop principale
-    menuFinale(punti, vite);
+    menuFinale(punti, vite, &audio);
     delwin(wgioco);
     delwin(whud);
     delwin(wtempo);
-    freeAudio(&audio);
     pthread_exit(NULL);
 }
 

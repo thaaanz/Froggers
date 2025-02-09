@@ -17,6 +17,8 @@
 #include <pthread.h>
 #include <semaphore.h>
 
+#include "audio.h"
+
 //rana
 #define ALTEZZA_RANA 2
 #define LARGHEZZA_RANA 5
@@ -162,5 +164,11 @@ typedef struct{
     int tane;
     int morte;
 } Punteggio;
+
+typedef struct{
+    Semafori semafori;
+    GameAudio audio;
+} ParametriControllo;
+
 
 #endif

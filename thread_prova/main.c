@@ -12,7 +12,12 @@ int main()
 
     stampaFrogger();
 
-    if (menuIniziale())
+    GameAudio audio; //inizializzo la struttura contenente gli audio di gioco
+    inizializzaAudio(&audio); //inizializzo l'audio
+
+    riproduciMusica(audio.musica_menu);
+
+    if (menuIniziale(&audio))
     {
         return 0; // non si vuole giocare
     };
@@ -26,18 +31,22 @@ int main()
 
     Semafori semafori={sem_liberi, sem_occupati, mutex};
 
+    ParametriControllo parametri={semafori, audio};
+
     do
     {
         clear();
         refresh();
         pthread_t tid_controllo;
-        pthread_create(&tid_controllo, NULL, &controllo, &semafori);
+        pthread_create(&tid_controllo, NULL, &controllo, &parametri);
         pthread_join(tid_controllo, NULL);
 
-    } while (restart());
+    } while (restart(&audio));
     
     sem_destroy(&sem_occupati);
     sem_destroy(&sem_liberi);
+
+    freeAudio(&audio);
 
     endwin();
 }

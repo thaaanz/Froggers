@@ -11,7 +11,7 @@
 #include "avvia.h"
 #include "audio.h"
 
-void* controllo(void* semafori);
+void *controllo(void *parametri);
 BoundingBox createBoundingBox(int x, int y, int larghezza, int altezza);
 _Bool checksovrapposizione(BoundingBox a, BoundingBox b);
 int checkTaneCollision(int x, int y, GameAudio audio);

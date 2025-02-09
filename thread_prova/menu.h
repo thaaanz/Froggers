@@ -3,30 +3,23 @@
 
 #include "utilities.h"
 #include "punteggio.h"
-
-#define ALTEZZA_MENU 4
-#define LARGHEZZA_MENU 31
-#define ALTEZZA_GO 5
-#define LARGHEZZA_GO 54
-#define ALTEZZA_WIN 5
-#define LARGHEZZA_WIN 49
-#define ALTEZZA_NEW 5
-#define LARGHEZZA_NEW 73
+#include "audio.h"
 
 extern const char spriteMenu[ALTEZZA_MENU][LARGHEZZA_MENU];
 extern const char spriteGameOver[ALTEZZA_GO][LARGHEZZA_GO];
 extern const char spriteWin[ALTEZZA_WIN][LARGHEZZA_WIN];
 extern const char spriteWin[ALTEZZA_WIN][LARGHEZZA_WIN];
+extern const char spriteFrogger[H_FROGGER][W_FROGGER];
 extern _Bool utentePrivilegiato;
 
-int menuIniziale();
+int menuIniziale(GameAudio* audio);
 void stampaRegolamento(WINDOW* wmenu);
-void selezionaUtente(WINDOW* wmenu);
-
-void menuFinale(Punteggio punti, int vite);
+void selezionaUtente(WINDOW* wmenu, GameAudio* audio);
+void menuFinale(Punteggio punti, int vite, GameAudio* audio);
+_Bool restart(GameAudio* audio);
 void stampaWin(WINDOW* w);
 void stampaGO(WINDOW* w);
-void stampaNewManche(WINDOW* w);
+void stampaNewManche();
 void stampaFrogger();
 
 #endif
